@@ -458,7 +458,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
         refresh()
     }
 
-    fun saveBudgets(daily: String, weekly: String, monthly: String) {
+    fun saveBudgets(daily: String, weekly: String, monthly: String, food: String = "") {
         viewModelScope.launch {
             try {
                 repository.saveSettings(
@@ -466,6 +466,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                         dailyBudget = daily.toLongOrNull() ?: 0L,
                         weeklyBudget = weekly.toLongOrNull() ?: 0L,
                         monthlyBudget = monthly.toLongOrNull() ?: 0L,
+                        foodDailyBudget = food.toLongOrNull() ?: 0L,
                     ),
                 )
                 _state.update { it.copy(notice = "Budget disimpan", error = null) }

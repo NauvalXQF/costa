@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class SettingController extends Controller
 {
@@ -19,6 +20,7 @@ class SettingController extends Controller
             'daily_budget' => ['nullable', 'integer', 'min:0'],
             'weekly_budget' => ['nullable', 'integer', 'min:0'],
             'monthly_budget' => ['nullable', 'integer', 'min:0'],
+            'food_daily_budget' => ['nullable', 'integer', 'min:0'],
         ]);
 
         $userId = $request->user()->id;
@@ -26,6 +28,17 @@ class SettingController extends Controller
         foreach (['daily_budget', 'weekly_budget', 'monthly_budget'] as $key) {
             if (array_key_exists($key, $data) && $data[$key] !== null) {
                 Setting::putFor($userId, $key, (int) $data[$key]);
+            }
+        }
+
+        if (array_key_exists('food_daily_budget', $data) && $data['food_daily_budget'] !== null) {
+            $newValue = (int) $data['food_daily_budget'];
+            $oldValue = (int) Setting::getFor($userId, 'food_daily_budget', 0);
+
+            Setting::putFor($userId, 'food_daily_budget', $newValue);
+
+            if ($oldValue !== $newValue) {
+                Setting::putFor($userId, 'food_budget_start', Carbon::today()->toDateString());
             }
         }
 
@@ -38,6 +51,7 @@ class SettingController extends Controller
             'daily_budget' => (int) Setting::getFor($userId, 'daily_budget', 0),
             'weekly_budget' => (int) Setting::getFor($userId, 'weekly_budget', 0),
             'monthly_budget' => (int) Setting::getFor($userId, 'monthly_budget', 0),
+            'food_daily_budget' => (int) Setting::getFor($userId, 'food_daily_budget', 0),
         ];
     }
 }

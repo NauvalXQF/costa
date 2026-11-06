@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -95,49 +97,19 @@ fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
             }
 
             item {
-                Text(
-                    text = "Per kategori",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
-            }
-
-            val categoryTotals = summary?.byCategory ?: emptyList()
-            if (categoryTotals.isEmpty()) {
-                item {
-                    Text(
-                        text = "Belum ada data kategori.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            } else {
-                items(categoryTotals, key = { it.slug ?: it.name ?: "unknown" }) { row ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(horizontal = 12.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Text(row.icon ?: "🧾", style = MaterialTheme.typography.titleMedium)
-                        Spacer(Modifier.width(10.dp))
                         Text(
-                            text = row.name ?: "-",
-                            modifier = Modifier.weight(1f),
-                            style = MaterialTheme.typography.bodyLarge,
-                        )
-                        Text(
-                            text = "${row.count}x",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(Modifier.width(10.dp))
-                        Text(
-                            text = formatRupiah(row.total),
-                            style = MaterialTheme.typography.bodyLarge,
+                            text = "Distribusi kategori",
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        CategoryDonutChart(
+                            items = summary?.byCategory ?: emptyList(),
+                            total = summary?.total ?: 0L,
                         )
                     }
                 }

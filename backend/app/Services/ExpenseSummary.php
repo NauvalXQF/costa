@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Category;
 use App\Models\Expense;
 use App\Models\Setting;
 use App\Models\User;
@@ -92,6 +93,69 @@ class ExpenseSummary
                 'remaining' => $monthRemaining,
                 'safe_to_spend_per_day' => $safeToSpendPerDay,
             ],
+            'food_budget' => self::foodBudget($user, $now),
+        ];
+    }
+
+    private static function foodBudget(User $user, Carbon $now): ?array
+    {
+        $base = (int) Setting::getFor($user->id, 'food_daily_budget', 0);
+
+        if ($base <= 0) {
+            return null;
+        }
+
+        $category = Category::query()->where('slug', 'makan')->first();
+
+        if (! $category) {
+            return null;
+        }
+
+        $monthStart = $now->copy()->startOfMonth()->startOfDay();
+        $todayStart = $now->copy()->startOfDay();
+
+        $startDate = Carbon::parse(
+            (string) Setting::getFor($user->id, 'food_budget_start', $todayStart->toDateString()),
+        )->startOfDay();
+
+        if ($startDate->lt($monthStart)) {
+            $startDate = $monthStart->copy();
+        }
+
+        if ($startDate->gt($todayStart)) {
+            $startDate = $todayStart->copy();
+        }
+
+        $days = (int) $startDate->diffInDays($todayStart) + 1;
+
+        $spentSinceStart = (int) Expense::query()
+            ->where('user_id', $user->id)
+            ->where('category_id', $category->id)
+            ->whereBetween('spent_at', [$startDate, $now->copy()->endOfDay()])
+            ->sum('amount');
+
+        $spentToday = (int) Expense::query()
+            ->where('user_id', $user->id)
+            ->where('category_id', $category->id)
+            ->whereBetween('spent_at', [$todayStart, $now->copy()->endOfDay()])
+            ->sum('amount');
+
+        $spentBeforeToday = $spentSinceStart - $spentToday;
+
+        $allowanceToday = $base + ($base * ($days - 1)) - $spentBeforeToday;
+        $balance = ($base * $days) - $spentSinceStart;
+
+        return [
+            'base' => $base,
+            'start' => $startDate->toDateString(),
+            'days' => $days,
+            'spent_today' => $spentToday,
+            'spent_since_start' => $spentSinceStart,
+            'allowance_today' => max(0, (int) $allowanceToday),
+            'balance' => (int) $balance,
+            'tomorrow_allowance' => max(0, (int) ($base + $balance)),
+            'debt' => $balance < 0 ? (int) abs($balance) : 0,
+            'bonus' => $balance > 0 ? (int) $balance : 0,
         ];
     }
 }

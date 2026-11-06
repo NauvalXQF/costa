@@ -2,8 +2,8 @@
 
 Personal expense tracker for students: a Laravel API + native Android app (Kotlin & Jetpack Compose).
 
-- **Backend**: Laravel 13, SQLite, Sanctum tokens, multi-user (per-account data), category management, summaries (daily / weekly / monthly), budget tracking, CSV & PDF export.
-- **Android**: Kotlin + Compose, login/registration, quick add, history, statistics, category management, notifications (daily reminder, budget warnings, weekly recap, monthly reset), pull-to-refresh, CSV/PDF export to Downloads.
+- **Backend**: Laravel 13, SQLite, Sanctum tokens, multi-user (per-account data), category management, summaries (daily / weekly / monthly), budget tracking with a rolling daily food allowance (debt/bonus carries to the next day), CSV & PDF export.
+- **Android**: Kotlin + Compose, login/registration, quick add, history with category donut chart, statistics, category management (reorder/hide/custom), notifications (daily reminder, budget warnings, weekly recap, monthly reset), pull-to-refresh, CSV/PDF export to Downloads.
 
 ## Structure
 

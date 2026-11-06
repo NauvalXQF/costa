@@ -61,6 +61,10 @@ fun HomeScreen(state: CostaUiState, viewModel: CostaViewModel) {
         ) {
             item { SummaryCard(title = "Hari ini", summary = state.today) }
 
+            state.today?.foodBudget?.let { food ->
+                item { FoodBudgetCard(food) }
+            }
+
             item {
                 Card(modifier = Modifier.fillMaxWidth()) {
                     androidx.compose.foundation.layout.Column(

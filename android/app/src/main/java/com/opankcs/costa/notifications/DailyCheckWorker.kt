@@ -37,6 +37,7 @@ class DailyCheckWorker(
                 if (prefs.notifyBudget) {
                     checkDailyBudget(prefs, today)
                     checkMonthlyBudget(prefs, month)
+                    checkFoodBudget(today)
                 }
             }
         } catch (_: Exception) {
@@ -46,6 +47,21 @@ class DailyCheckWorker(
         }
 
         return Result.success()
+    }
+
+    private fun checkFoodBudget(today: Summary) {
+        val food = today.foodBudget ?: return
+
+        if (food.base <= 0L || food.debt <= 0L) return
+
+        CostaNotifications.show(
+            context = context,
+            channel = CostaNotifications.CHANNEL_BUDGET,
+            id = 2101,
+            title = "Jatah makan besok turun",
+            text = "Kelebihan makan ${formatRupiah(food.debt)}. Jatah besok " +
+                "${formatRupiah(food.tomorrowAllowance)} (normal ${formatRupiah(food.base)}/hari).",
+        )
     }
 
     private fun checkDailyBudget(prefs: Prefs, today: Summary) {

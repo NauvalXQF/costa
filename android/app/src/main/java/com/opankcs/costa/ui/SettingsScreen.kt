@@ -54,6 +54,9 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
     var monthly by rememberSaveable(state.settings.monthlyBudget) {
         mutableStateOf(if (state.settings.monthlyBudget > 0) state.settings.monthlyBudget.toString() else "")
     }
+    var food by rememberSaveable(state.settings.foodDailyBudget) {
+        mutableStateOf(if (state.settings.foodDailyBudget > 0) state.settings.foodDailyBudget.toString() else "")
+    }
 
     var showNameDialog by remember { mutableStateOf(false) }
     var nameInput by remember { mutableStateOf(state.userName) }
@@ -305,8 +308,21 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
+                    OutlinedTextField(
+                        value = food,
+                        onValueChange = { food = it },
+                        label = { Text("Jatah makan harian (Rp)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Text(
+                        text = "Jatah makan dihitung per hari dan saldonya berjalan otomatis (bonus/hutang ikut ke hari berikutnya). Kosongkan untuk menonaktifkan.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                     Button(
-                        onClick = { viewModel.saveBudgets(daily, weekly, monthly) },
+                        onClick = { viewModel.saveBudgets(daily, weekly, monthly, food) },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text("Simpan budget")

@@ -45,6 +45,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.opankcs.costa.data.Category
 import com.opankcs.costa.data.Expense
+import com.opankcs.costa.data.FoodBudget
 import com.opankcs.costa.data.Summary
 
 @Composable
@@ -107,6 +108,77 @@ fun SummaryCard(title: String, summary: Summary?) {
                 text = "${summary?.count ?: 0} transaksi",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+fun FoodBudgetCard(food: FoodBudget) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = "Jatah makan hari ini",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(
+                    text = formatRupiah(food.allowanceToday),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = "dari ${formatRupiah(food.base)}/hari",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 4.dp),
+                )
+            }
+
+            val progress = if (food.allowanceToday > 0L) {
+                (food.spentToday.toFloat() / food.allowanceToday.toFloat()).coerceIn(0f, 1f)
+            } else {
+                0f
+            }
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(3.dp)),
+            )
+
+            Text(
+                text = "Terpakai hari ini ${formatRupiah(food.spentToday)}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            val status = when {
+                food.debt > 0 -> "Hutang jajan ${formatRupiah(food.debt)} · besok jatah ${formatRupiah(food.tomorrowAllowance)}"
+                food.bonus > 0 -> "Bonus ${formatRupiah(food.bonus)} · besok jatah ${formatRupiah(food.tomorrowAllowance)}"
+                else -> "Pas · besok jatah ${formatRupiah(food.tomorrowAllowance)}"
+            }
+            val statusColor = when {
+                food.debt > 0 -> MaterialTheme.colorScheme.error
+                food.bonus > 0 -> MaterialTheme.colorScheme.secondary
+                else -> MaterialTheme.colorScheme.onSurfaceVariant
+            }
+            Text(
+                text = status,
+                style = MaterialTheme.typography.bodySmall,
+                color = statusColor,
             )
         }
     }

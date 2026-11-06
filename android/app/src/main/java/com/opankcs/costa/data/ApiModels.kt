@@ -96,18 +96,33 @@ data class MonthStatus(
     @SerializedName("safe_to_spend_per_day") val safeToSpendPerDay: Long? = null,
 )
 
+data class FoodBudget(
+    val base: Long = 0,
+    val start: String? = null,
+    val days: Int = 0,
+    @SerializedName("spent_today") val spentToday: Long = 0,
+    @SerializedName("spent_since_start") val spentSinceStart: Long = 0,
+    @SerializedName("allowance_today") val allowanceToday: Long = 0,
+    val balance: Long = 0,
+    @SerializedName("tomorrow_allowance") val tomorrowAllowance: Long = 0,
+    val debt: Long = 0,
+    val bonus: Long = 0,
+)
+
 data class Summary(
     val total: Long = 0,
     val count: Int = 0,
     @SerializedName("by_category") val byCategory: List<CategoryTotal> = emptyList(),
     val budget: BudgetStatus = BudgetStatus(),
     val month: MonthStatus = MonthStatus(),
+    @SerializedName("food_budget") val foodBudget: FoodBudget? = null,
 )
 
 data class Settings(
     @SerializedName("daily_budget") val dailyBudget: Long = 0,
     @SerializedName("weekly_budget") val weeklyBudget: Long = 0,
     @SerializedName("monthly_budget") val monthlyBudget: Long = 0,
+    @SerializedName("food_daily_budget") val foodDailyBudget: Long = 0,
 )
 
 data class SettingsResponse(
