@@ -113,7 +113,7 @@ fun CategoryOrderDialog(
                                     .pointerInput(category.id) {
                                         detectDragGesturesAfterLongPress(
                                             onDragStart = {
-                                                draggingIndex = index
+                                                draggingIndex = items.indexOfFirst { it.id == category.id }
                                                 dragOffset = 0f
                                             },
                                             onDragEnd = {
