@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Costa" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/costa_graphite</item>
+        <item name="android:statusBarColor">@color/costa_graphite</item>
+        <item name="android:navigationBarColor">@color/costa_graphite</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

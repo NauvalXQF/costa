@@ -1,0 +1,29 @@
+# Backend
+backend/vendor/
+backend/node_modules/
+backend/.env
+backend/.phpunit.cache/
+backend/database/*.sqlite
+backend/storage/logs/*
+backend/storage/framework/cache/*
+!backend/storage/framework/cache/.gitignore
+backend/storage/framework/sessions/*
+!backend/storage/framework/sessions/.gitignore
+backend/storage/framework/views/*
+!backend/storage/framework/views/.gitignore
+backend/storage/app/public/costa.apk
+backend/bootstrap/cache/*
+!backend/bootstrap/cache/.gitignore
+
+# Android
+android/.gradle/
+android/.idea/
+android/local.properties
+android/build/
+android/app/build/
+android/captures/
+*.iml
+.DS_Store
+
+# Misc
+costa-backend.tar.gz
