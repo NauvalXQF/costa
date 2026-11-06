@@ -155,6 +155,13 @@ data class RegisterRequest(
     @SerializedName("device_name") val deviceName: String = "android",
 )
 
+data class AppVersionResponse(
+    @SerializedName("version_code") val versionCode: Int = 0,
+    @SerializedName("version_name") val versionName: String = "",
+    @SerializedName("apk_url") val apkUrl: String = "",
+    val notes: String = "",
+)
+
 data class MeResponse(
     val user: UserDto? = null,
 )

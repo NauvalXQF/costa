@@ -36,6 +36,10 @@ class CostaRepository(private val prefs: Prefs) {
 
     suspend fun categoryList(): CategoryListResponse = api.categories()
 
+    suspend fun appVersion(): AppVersionResponse = api.appVersion()
+
+    suspend fun downloadApk(url: String): ResponseBody = api.downloadApk(url)
+
     suspend fun createCategory(name: String, icon: String?): Category? =
         api.createCategory(CreateCategoryRequest(name = name, icon = icon)).data
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AppInfoController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ExpenseController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\SummaryController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/app-version', [AppInfoController::class, 'version']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 

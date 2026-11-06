@@ -74,3 +74,11 @@ Copy-Item C:\Users\<user>\backend\database\database.sqlite "C:\Users\<user>\back
 ```
 
 Simpan 14 hari terakhir, hapus file lebih lama secara berkala.
+
+## 5. Rilis APK baru (update in-app)
+
+1. Naikkan `versionCode` dan `versionName` di `android/app/build.gradle.kts`.
+2. Build APK debug.
+3. Upload ke `backend/storage/app/public/costa.apk`.
+4. Perbarui `backend/storage/app/app-version.json` (`version_code`, `version_name`, `notes`).
+5. Buka app — dialog update muncul otomatis; pengguna tinggal Unduh & pasang.

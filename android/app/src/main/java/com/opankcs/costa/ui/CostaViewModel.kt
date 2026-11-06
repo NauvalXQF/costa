@@ -1,8 +1,12 @@
 package com.opankcs.costa.ui
 
 import android.app.Application
+import android.content.Intent
+import androidx.core.content.FileProvider
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.opankcs.costa.BuildConfig
+import com.opankcs.costa.data.AppVersionResponse
 import com.opankcs.costa.data.Category
 import com.opankcs.costa.data.CostaRepository
 import com.opankcs.costa.data.DownloadSaver
@@ -16,6 +20,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
+import java.io.File
 import java.time.LocalDate
 
 data class CostaUiState(
@@ -33,6 +38,8 @@ data class CostaUiState(
     val week: Summary? = null,
     val month: Summary? = null,
     val settings: Settings = Settings(),
+    val availableUpdate: AppVersionResponse? = null,
+    val updateDownloading: Boolean = false,
 )
 
 class CostaViewModel(application: Application) : AndroidViewModel(application) {
@@ -52,6 +59,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         refresh()
+        checkForUpdate(silent = true)
     }
 
     fun login(email: String, password: String, baseUrl: String) {
@@ -485,6 +493,79 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                 refresh()
             } catch (e: Exception) {
                 _state.update { it.copy(error = "Gagal menyimpan budget") }
+            }
+        }
+    }
+
+    fun checkForUpdate(silent: Boolean = false) {
+        viewModelScope.launch {
+            try {
+                val info = repository.appVersion()
+
+                if (info.versionCode > BuildConfig.VERSION_CODE) {
+                    _state.update { it.copy(availableUpdate = info) }
+                } else if (!silent) {
+                    _state.update {
+                        it.copy(
+                            notice = "Aplikasi sudah versi terbaru (${BuildConfig.VERSION_NAME})",
+                            error = null,
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                if (!silent) {
+                    _state.update { it.copy(error = "Gagal memeriksa update") }
+                }
+            }
+        }
+    }
+
+    fun dismissUpdate() {
+        _state.update { it.copy(availableUpdate = null) }
+    }
+
+    fun downloadAndInstallUpdate() {
+        val update = _state.value.availableUpdate ?: return
+
+        if (_state.value.updateDownloading) return
+
+        viewModelScope.launch {
+            _state.update { it.copy(updateDownloading = true, error = null) }
+
+            try {
+                val body = repository.downloadApk(update.apkUrl)
+                val context = getApplication<Application>()
+                val file = File(context.cacheDir, "costa-update.apk")
+
+                file.outputStream().use { output ->
+                    body.byteStream().use { input -> input.copyTo(output) }
+                }
+
+                val uri = FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.fileprovider",
+                    file,
+                )
+
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(uri, "application/vnd.android.package-archive")
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+
+                context.startActivity(intent)
+
+                _state.update {
+                    it.copy(
+                        updateDownloading = false,
+                        availableUpdate = null,
+                        notice = "Ikuti petunjuk pemasangan untuk menyelesaikan update",
+                        error = null,
+                    )
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(updateDownloading = false, error = "Gagal mengunduh update")
+                }
             }
         }
     }

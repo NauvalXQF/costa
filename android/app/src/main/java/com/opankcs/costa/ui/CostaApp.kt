@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -34,6 +35,37 @@ import kotlinx.coroutines.delay
 fun CostaApp(viewModel: CostaViewModel) {
     val state by viewModel.state.collectAsState()
     var tab by rememberSaveable { mutableStateOf(0) }
+
+    state.availableUpdate?.let { update ->
+        AlertDialog(
+            onDismissRequest = viewModel::dismissUpdate,
+            title = { Text("Update tersedia") },
+            text = {
+                Text(
+                    buildString {
+                        append("Versi ${update.versionName} sudah tersedia.")
+                        if (update.notes.isNotBlank()) {
+                            append("\n\n")
+                            append(update.notes)
+                        }
+                    },
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { viewModel.downloadAndInstallUpdate() },
+                    enabled = !state.updateDownloading,
+                ) {
+                    Text(if (state.updateDownloading) "Mengunduh..." else "Unduh & pasang")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::dismissUpdate) {
+                    Text("Nanti")
+                }
+            },
+        )
+    }
 
     LaunchedEffect(state.notice) {
         if (state.notice != null) {

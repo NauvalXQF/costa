@@ -10,6 +10,7 @@ import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.Streaming
+import retrofit2.http.Url
 
 interface CostaApi {
     @POST("api/login")
@@ -17,6 +18,13 @@ interface CostaApi {
 
     @POST("api/register")
     suspend fun register(@Body body: RegisterRequest): LoginResponse
+
+    @GET("api/app-version")
+    suspend fun appVersion(): AppVersionResponse
+
+    @Streaming
+    @GET
+    suspend fun downloadApk(@Url url: String): ResponseBody
 
     @POST("api/logout")
     suspend fun logout()

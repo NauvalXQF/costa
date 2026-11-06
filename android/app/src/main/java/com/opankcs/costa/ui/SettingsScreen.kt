@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.opankcs.costa.BuildConfig
 import com.opankcs.costa.data.Category
 import com.opankcs.costa.data.Prefs
 import com.opankcs.costa.notifications.CostaNotifications
@@ -383,6 +384,52 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         },
                     ) {
                         Text("Kirim tes notifikasi")
+                    }
+                }
+            }
+        }
+
+        item {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        text = "Update aplikasi",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = "Versi terpasang: ${BuildConfig.VERSION_NAME}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Button(
+                        onClick = { viewModel.checkForUpdate() },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text("Cek update")
+                    }
+                    state.availableUpdate?.let { update ->
+                        Text(
+                            text = "Versi ${update.versionName} tersedia",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.secondary,
+                        )
+                        Button(
+                            onClick = { viewModel.downloadAndInstallUpdate() },
+                            enabled = !state.updateDownloading,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                if (state.updateDownloading) {
+                                    "Mengunduh..."
+                                } else {
+                                    "Unduh & pasang"
+                                },
+                            )
+                        }
                     }
                 }
             }
