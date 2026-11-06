@@ -1,7 +1,6 @@
 package com.opankcs.costa.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,7 +11,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -23,7 +22,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -31,15 +29,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
 import com.opankcs.costa.data.Category
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Composable
 fun CategoryOrderDialog(
@@ -47,15 +44,17 @@ fun CategoryOrderDialog(
     onDismiss: () -> Unit,
     onSave: (List<Category>) -> Unit,
 ) {
-    var items by remember { mutableStateOf(categories) }
-    var draggingIndex by remember { mutableStateOf<Int?>(null) }
-    var dragOffset by remember { mutableFloatStateOf(0f) }
-    val rowHeight = with(LocalDensity.current) { 56.dp.toPx() }
+    var ordered by remember { mutableStateOf(categories) }
+    val listState = rememberLazyListState()
+
+    val reorderableState = rememberReorderableLazyListState(listState) { from, to ->
+        ordered = ordered.toMutableList().apply {
+            add(to.index, removeAt(from.index))
+        }
+    }
 
     LaunchedEffect(categories) {
-        if (draggingIndex == null) {
-            items = categories
-        }
+        ordered = categories
     }
 
     Dialog(
@@ -84,76 +83,40 @@ fun CategoryOrderDialog(
                 Spacer(Modifier.height(8.dp))
 
                 LazyColumn(
-                    state = rememberLazyListState(),
+                    state = listState,
                     modifier = Modifier.heightIn(max = 420.dp),
                 ) {
-                    itemsIndexed(items, key = { _, category -> category.id }) { index, category ->
-                        val isDragging = draggingIndex == index
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp)
-                                .zIndex(if (isDragging) 1f else 0f)
-                                .graphicsLayer { translationY = if (isDragging) dragOffset else 0f }
-                                .animateItem()
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(
-                                    if (isDragging) MaterialTheme.colorScheme.surface
-                                    else Color.Transparent,
-                                )
-                                .padding(horizontal = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = "⠿",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    items(ordered, key = { it.id }) { category ->
+                        ReorderableItem(reorderableState, key = category.id) { isDragging ->
+                            Row(
                                 modifier = Modifier
-                                    .pointerInput(category.id) {
-                                        detectDragGesturesAfterLongPress(
-                                            onDragStart = {
-                                                draggingIndex = items.indexOfFirst { it.id == category.id }
-                                                dragOffset = 0f
-                                            },
-                                            onDragEnd = {
-                                                draggingIndex = null
-                                                dragOffset = 0f
-                                            },
-                                            onDragCancel = {
-                                                draggingIndex = null
-                                                dragOffset = 0f
-                                            },
-                                            onDrag = { change, amount ->
-                                                change.consume()
-                                                dragOffset += amount.y
-
-                                                val current = draggingIndex ?: return@detectDragGesturesAfterLongPress
-
-                                                if (dragOffset > rowHeight / 2 && current < items.lastIndex) {
-                                                    items = items.toMutableList().apply {
-                                                        add(current + 1, removeAt(current))
-                                                    }
-                                                    draggingIndex = current + 1
-                                                    dragOffset -= rowHeight
-                                                } else if (dragOffset < -rowHeight / 2 && current > 0) {
-                                                    items = items.toMutableList().apply {
-                                                        add(current - 1, removeAt(current))
-                                                    }
-                                                    draggingIndex = current - 1
-                                                    dragOffset += rowHeight
-                                                }
-                                            },
-                                        )
-                                    }
-                                    .padding(8.dp),
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                text = "${category.icon ?: ""} ${category.name}".trim(),
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.weight(1f),
-                            )
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                                    .zIndex(if (isDragging) 1f else 0f)
+                                    .animateItem()
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(
+                                        if (isDragging) MaterialTheme.colorScheme.surface
+                                        else Color.Transparent,
+                                    )
+                                    .padding(horizontal = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = "⠿",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier
+                                        .draggableHandle()
+                                        .padding(8.dp),
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    text = "${category.icon ?: ""} ${category.name}".trim(),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
                         }
                     }
                 }
@@ -168,7 +131,7 @@ fun CategoryOrderDialog(
                         Text("Batal")
                     }
                     Spacer(Modifier.width(8.dp))
-                    Button(onClick = { onSave(items) }) {
+                    Button(onClick = { onSave(ordered) }) {
                         Text("Simpan urutan")
                     }
                 }
