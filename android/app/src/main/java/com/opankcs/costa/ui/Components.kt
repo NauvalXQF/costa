@@ -74,8 +74,12 @@ fun SummaryCard(title: String, summary: Summary?) {
 
             val budget = summary?.budget
             if (budget?.limit != null && budget.limit > 0) {
+                val statusColor = budgetProgressColor(budget.percent)
+                val statusLabel = budgetStatusLabel(budget.percent)
+
                 LinearProgressIndicator(
                     progress = { ((budget.percent ?: 0.0).toFloat() / 100f).coerceIn(0f, 1f) },
+                    color = statusColor,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(6.dp)
@@ -86,12 +90,12 @@ fun SummaryCard(title: String, summary: Summary?) {
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                if (budget.exceeded) {
+                if (statusLabel.isNotBlank()) {
                     Text(
-                        text = "Melewati budget!",
+                        text = statusLabel,
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.error,
+                        color = statusColor,
                     )
                 }
             }
@@ -146,6 +150,16 @@ fun FoodBudgetCard(food: FoodBudget) {
                 )
             }
 
+            val percentage = if (food.allowanceToday > 0L) {
+                food.spentToday.toDouble() / food.allowanceToday.toDouble() * 100.0
+            } else if (food.debt > 0L) {
+                100.0
+            } else {
+                0.0
+            }
+            val statusColor = budgetProgressColor(percentage)
+            val statusLabel = budgetStatusLabel(percentage)
+
             val progress = if (food.allowanceToday > 0L) {
                 (food.spentToday.toFloat() / food.allowanceToday.toFloat()).coerceIn(0f, 1f)
             } else {
@@ -153,24 +167,39 @@ fun FoodBudgetCard(food: FoodBudget) {
             }
             LinearProgressIndicator(
                 progress = { progress },
+                color = statusColor,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp)),
             )
 
-            Text(
-                text = "Terpakai hari ini ${formatRupiah(food.spentToday)}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Terpakai hari ini ${formatRupiah(food.spentToday)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+                if (statusLabel.isNotBlank()) {
+                    Text(
+                        text = statusLabel,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = statusColor,
+                    )
+                }
+            }
 
             val status = when {
-                food.debt > 0 -> "Hutang jajan ${formatRupiah(food.debt)} · besok jatah ${formatRupiah(food.tomorrowAllowance)}"
-                food.bonus > 0 -> "Bonus ${formatRupiah(food.bonus)} · besok jatah ${formatRupiah(food.tomorrowAllowance)}"
+                food.debt > 0 -> "▼ Hutang jajan ${formatRupiah(food.debt)} · besok jatah ${formatRupiah(food.tomorrowAllowance)}"
+                food.bonus > 0 -> "▲ Bonus ${formatRupiah(food.bonus)} · besok jatah ${formatRupiah(food.tomorrowAllowance)}"
                 else -> "Pas · besok jatah ${formatRupiah(food.tomorrowAllowance)}"
             }
-            val statusColor = when {
+            val statusContentColor = when {
                 food.debt > 0 -> MaterialTheme.colorScheme.error
                 food.bonus > 0 -> MaterialTheme.colorScheme.secondary
                 else -> MaterialTheme.colorScheme.onSurfaceVariant
@@ -178,7 +207,8 @@ fun FoodBudgetCard(food: FoodBudget) {
             Text(
                 text = status,
                 style = MaterialTheme.typography.bodySmall,
-                color = statusColor,
+                fontWeight = if (food.debt > 0 || food.bonus > 0) FontWeight.SemiBold else FontWeight.Normal,
+                color = statusContentColor,
             )
         }
     }

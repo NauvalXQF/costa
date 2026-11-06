@@ -340,6 +340,18 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun reorderCategories(ordered: List<Category>) {
+        viewModelScope.launch {
+            try {
+                repository.reorderCategories(ordered.map { it.slug })
+                _state.update { it.copy(notice = "Urutan kategori disimpan", error = null) }
+                refresh()
+            } catch (e: Exception) {
+                _state.update { it.copy(error = "Gagal mengubah urutan kategori") }
+            }
+        }
+    }
+
     fun moveCategory(category: Category, direction: Int) {
         val list = _state.value.categories.toMutableList()
         val index = list.indexOfFirst { it.id == category.id }

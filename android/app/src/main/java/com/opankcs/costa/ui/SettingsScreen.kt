@@ -62,6 +62,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
     var nameInput by remember { mutableStateOf(state.userName) }
 
     var showAddCategory by remember { mutableStateOf(false) }
+    var showOrderDialog by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
     var newCategoryIcon by remember { mutableStateOf("") }
 
@@ -151,10 +152,16 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         }
                     }
                     Text(
-                        text = "Atur urutan dengan ▲▼. ✎ mengedit kategori buatanmu; ✕ menyembunyikan kategori bawaan atau menghapus kategori buatanmu.",
+                        text = "Atur urutan lewat tombol \"Atur urutan\" (tahan ⠿ lalu geser). ✎ mengedit kategori buatanmu; ✕ menyembunyikan kategori bawaan atau menghapus kategori buatanmu.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                    Button(
+                        onClick = { showOrderDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text("Atur urutan (drag & drop)")
+                    }
                     if (state.hiddenCategories.isNotEmpty()) {
                         TextButton(onClick = { viewModel.restoreCategories() }) {
                             Text("Pulihkan ${state.hiddenCategories.size} kategori bawaan")
@@ -170,20 +177,6 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                                 text = "${category.icon ?: ""} ${category.name}".trim(),
                                 style = MaterialTheme.typography.bodyLarge,
                                 modifier = Modifier.weight(1f),
-                            )
-                            Text(
-                                text = "▲",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier
-                                    .clickable { viewModel.moveCategory(category, -1) }
-                                    .padding(horizontal = 6.dp, vertical = 4.dp),
-                            )
-                            Text(
-                                text = "▼",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier
-                                    .clickable { viewModel.moveCategory(category, 1) }
-                                    .padding(horizontal = 6.dp, vertical = 4.dp),
                             )
                             if (category.userId != null) {
                                 Text(
@@ -519,6 +512,17 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                 TextButton(onClick = { showAddCategory = false }) {
                     Text("Batal")
                 }
+            },
+        )
+    }
+
+    if (showOrderDialog) {
+        CategoryOrderDialog(
+            categories = state.categories,
+            onDismiss = { showOrderDialog = false },
+            onSave = { ordered ->
+                viewModel.reorderCategories(ordered)
+                showOrderDialog = false
             },
         )
     }
