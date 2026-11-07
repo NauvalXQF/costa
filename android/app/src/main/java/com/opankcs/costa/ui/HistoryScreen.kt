@@ -130,9 +130,47 @@ fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     PeriodChip(stringResource(R.string.this_week), period == "week") { period = "week" }
                     PeriodChip(stringResource(R.string.this_month), period == "month") { period = "month" }
+                    if (period == "month") {
+                        Spacer(Modifier.weight(1f))
+                        Box {
+                            TextButton(
+                                onClick = {
+                                    haptics.tick()
+                                    showExportMenu = true
+                                },
+                            ) {
+                                Text("⋮", style = MaterialTheme.typography.titleLarge)
+                            }
+                            DropdownMenu(
+                                expanded = showExportMenu,
+                                onDismissRequest = { showExportMenu = false },
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.export_csv_action)) },
+                                    onClick = {
+                                        showExportMenu = false
+                                        haptics.confirm()
+                                        viewModel.exportData("csv", state.historyMonth)
+                                    },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.export_pdf_action)) },
+                                    onClick = {
+                                        showExportMenu = false
+                                        haptics.confirm()
+                                        viewModel.exportData("pdf", state.historyMonth)
+                                    },
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
@@ -165,37 +203,6 @@ fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
                             enabled = state.historyMonth < currentMonth,
                         ) {
                             Text("›", style = MaterialTheme.typography.titleLarge)
-                        }
-                        Box {
-                            TextButton(
-                                onClick = {
-                                    haptics.tick()
-                                    showExportMenu = true
-                                },
-                            ) {
-                                Text("⋮", style = MaterialTheme.typography.titleLarge)
-                            }
-                            DropdownMenu(
-                                expanded = showExportMenu,
-                                onDismissRequest = { showExportMenu = false },
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.export_csv_action)) },
-                                    onClick = {
-                                        showExportMenu = false
-                                        haptics.confirm()
-                                        viewModel.exportData("csv", state.historyMonth)
-                                    },
-                                )
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.export_pdf_action)) },
-                                    onClick = {
-                                        showExportMenu = false
-                                        haptics.confirm()
-                                        viewModel.exportData("pdf", state.historyMonth)
-                                    },
-                                )
-                            }
                         }
                     }
                 }
