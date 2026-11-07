@@ -54,9 +54,9 @@
     <string name="food_over">Over %1$s from today allowance</string>
     <string name="food_remaining">Remaining today %1$s</string>
     <string name="food_used">Used today %1$s</string>
-    <string name="food_debt">▼ Food debt %1$s · tomorrow allowance %2$s</string>
-    <string name="food_bonus">▲ Bonus %1$s · tomorrow allowance %2$s</string>
-    <string name="food_even">Even · tomorrow allowance %1$s</string>
+    <string name="food_debt">▼ Tomorrow allowance %1$s</string>
+    <string name="food_bonus">▲ Tomorrow allowance %1$s</string>
+    <string name="food_even">Tomorrow allowance %1$s</string>
     <string name="delete_expense_title">Delete expense?</string>
     <string name="delete_expense_desc">%1$s %2$s · %3$s</string>
     <string name="delete_cannot_undo">Deleted data cannot be recovered.</string>

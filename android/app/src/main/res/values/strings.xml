@@ -54,9 +54,9 @@
     <string name="food_over">Lewat %1$s dari jatah hari ini</string>
     <string name="food_remaining">Sisa jatah hari ini %1$s</string>
     <string name="food_used">Terpakai hari ini %1$s</string>
-    <string name="food_debt">▼ Hutang jajan %1$s · besok jatah %2$s</string>
-    <string name="food_bonus">▲ Bonus %1$s · besok jatah %2$s</string>
-    <string name="food_even">Pas · besok jatah %1$s</string>
+    <string name="food_debt">▼ Besok jatah %1$s</string>
+    <string name="food_bonus">▲ Besok jatah %1$s</string>
+    <string name="food_even">Besok jatah %1$s</string>
     <string name="delete_expense_title">Hapus pengeluaran?</string>
     <string name="delete_expense_desc">%1$s %2$s · %3$s</string>
     <string name="delete_cannot_undo">Data yang dihapus tidak bisa dikembalikan.</string>

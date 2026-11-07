@@ -213,8 +213,8 @@ fun FoodBudgetCard(food: FoodBudget) {
             }
 
             val status = when {
-                food.debt > 0 -> stringResource(R.string.food_debt, formatRupiah(food.debt), formatRupiah(food.tomorrowAllowance))
-                food.bonus > 0 -> stringResource(R.string.food_bonus, formatRupiah(food.bonus), formatRupiah(food.tomorrowAllowance))
+                food.debt > 0 -> stringResource(R.string.food_debt, formatRupiah(food.tomorrowAllowance))
+                food.bonus > 0 -> stringResource(R.string.food_bonus, formatRupiah(food.tomorrowAllowance))
                 else -> stringResource(R.string.food_even, formatRupiah(food.tomorrowAllowance))
             }
             val statusContentColor = when {
