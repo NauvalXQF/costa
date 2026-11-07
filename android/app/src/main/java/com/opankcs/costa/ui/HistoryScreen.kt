@@ -278,6 +278,7 @@ fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
                             expense = expense,
                             onClick = { editing = expense },
                             onDelete = { pendingDelete = expense },
+                            modifier = Modifier.animateItem(),
                         )
                     }
                 }

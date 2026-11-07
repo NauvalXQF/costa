@@ -2,6 +2,18 @@ package com.opankcs.costa.ui
 
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -170,10 +182,24 @@ fun CostaApp(viewModel: CostaViewModel, startAtHome: Boolean = false) {
                 }
 
                 Box(modifier = Modifier.weight(1f)) {
-                    when (tab) {
-                        0 -> HomeScreen(state, viewModel)
-                        1 -> HistoryScreen(state, viewModel)
-                        else -> SettingsScreen(state, viewModel)
+                    AnimatedContent(
+                        targetState = tab,
+                        transitionSpec = {
+                            val direction = if (targetState > initialState) 1 else -1
+                            (slideInHorizontally(
+                                animationSpec = tween(240, easing = FastOutSlowInEasing),
+                            ) { width -> direction * width / 12 } + fadeIn(tween(220))) togetherWith
+                                (slideOutHorizontally(
+                                    animationSpec = tween(180, easing = FastOutSlowInEasing),
+                                ) { width -> -direction * width / 18 } + fadeOut(tween(160)))
+                        },
+                        label = "tabTransition",
+                    ) { currentTab ->
+                        when (currentTab) {
+                            0 -> HomeScreen(state, viewModel)
+                            1 -> HistoryScreen(state, viewModel)
+                            else -> SettingsScreen(state, viewModel)
+                        }
                     }
                 }
 
@@ -200,4 +226,23 @@ fun CostaApp(viewModel: CostaViewModel, startAtHome: Boolean = false) {
             }
         }
     }
+}
+@Composable
+private fun AnimatedNavIcon(icon: String, selected: Boolean) {
+    val scale by animateFloatAsState(
+        targetValue = if (selected) 1.12f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMediumLow,
+        ),
+        label = "navIconScale",
+    )
+
+    Text(
+        text = icon,
+        modifier = Modifier.graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+        },
+    )
 }
