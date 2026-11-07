@@ -78,9 +78,9 @@ fun CostaSplash(onFinished: () -> Unit) {
         started = true
         delay(220)
         lettersVisible = true
-        delay(650)
+        delay(850)
         taglineVisible = true
-        delay(450)
+        delay(2800)
         exiting = true
         delay(280)
         onFinished()
@@ -158,11 +158,11 @@ fun CostaSplash(onFinished: () -> Unit) {
 
             Text(
                 text = stringResource(R.string.splash_tagline),
-                style = MaterialTheme.typography.labelSmall.copy(
+                style = MaterialTheme.typography.labelMedium.copy(
                     letterSpacing = 1.6.sp,
                     fontWeight = FontWeight.Medium,
                 ),
-                color = CostaMuted,
+                color = CostaInk.copy(alpha = 0.82f),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.graphicsLayer { alpha = taglineAlpha },
             )
