@@ -32,6 +32,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -165,28 +168,22 @@ fun CostaSplash(onFinished: () -> Unit) {
             )
         }
 
-        Row(
+        Text(
+            text = buildAnnotatedString {
+                append("opankcs")
+                withStyle(SpanStyle(color = CostaAmber)) { append(".") }
+                append("com")
+            },
+            style = MaterialTheme.typography.labelMedium.copy(
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = (-0.3).sp,
+            ),
+            color = CostaInk,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 38.dp)
                 .graphicsLayer { alpha = overlayAlpha },
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(5.dp)
-                    .clip(CircleShape)
-                    .background(CostaAmber),
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = "opankcs.com",
-                style = MaterialTheme.typography.labelSmall.copy(
-                    letterSpacing = 1.8.sp,
-                    fontWeight = FontWeight.Medium,
-                ),
-                color = CostaMuted,
-            )
-        }
+        )
     }
 }
