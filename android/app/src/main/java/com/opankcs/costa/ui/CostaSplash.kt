@@ -80,7 +80,7 @@ fun CostaSplash(onFinished: () -> Unit) {
         lettersVisible = true
         delay(850)
         taglineVisible = true
-        delay(2800)
+        delay(1800)
         exiting = true
         delay(280)
         onFinished()
