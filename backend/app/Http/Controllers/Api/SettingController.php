@@ -1,8 +1,10 @@
 <?php
 
 namespace App\Http\Controllers\Api;
-use App\Http\Controllers\Controller;
 
+use App\Http\Controllers\Controller;
+use App\Models\Category;
+use App\Models\Expense;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\BudgetPlan;
@@ -47,14 +49,64 @@ class SettingController extends Controller
             $newValue = (int) $data['food_daily_budget'];
             $oldValue = (int) Setting::getFor($userId, 'food_daily_budget', 0);
 
-            Setting::putFor($userId, 'food_daily_budget', $newValue);
-
             if ($oldValue !== $newValue) {
-                Setting::putFor($userId, 'food_budget_start', Carbon::today()->toDateString());
+                $today = Carbon::today();
+                $carry = $newValue > 0 ? $this->foodCarry($userId, $oldValue, $today) : 0;
+
+                Setting::putFor($userId, 'food_balance_carry', $carry);
+                Setting::putFor($userId, 'food_carry_month', $today->format('Y-m'));
+                Setting::putFor($userId, 'food_budget_start', $today->toDateString());
             }
+
+            Setting::putFor($userId, 'food_daily_budget', $newValue);
         }
 
         return response()->json(['data' => $this->payload($request->user())]);
+    }
+
+    private function foodCarry(int $userId, int $oldBase, Carbon $today): int
+    {
+        if ($oldBase <= 0) {
+            return 0;
+        }
+
+        $monthStart = $today->copy()->startOfMonth();
+        $start = Carbon::parse(
+            (string) Setting::getFor($userId, 'food_budget_start', $today->toDateString()),
+        )->startOfDay();
+
+        if ($start->lt($monthStart)) {
+            $start = $monthStart->copy();
+        }
+
+        if ($start->gt($today)) {
+            $start = $today->copy();
+        }
+
+        $daysBeforeToday = (int) $start->diffInDays($today);
+        $spentBeforeToday = 0;
+
+        if ($daysBeforeToday > 0) {
+            $category = Category::query()
+                ->whereNull('user_id')
+                ->where('slug', 'makan')
+                ->first();
+
+            if ($category) {
+                $spentBeforeToday = (int) Expense::query()
+                    ->where('user_id', $userId)
+                    ->where('category_id', $category->id)
+                    ->whereBetween('spent_at', [$start, $today->copy()->subDay()->endOfDay()])
+                    ->sum('amount');
+            }
+        }
+
+        $existingCarry = 0;
+        if ((string) Setting::getFor($userId, 'food_carry_month', '') === $today->format('Y-m')) {
+            $existingCarry = (int) Setting::getFor($userId, 'food_balance_carry', 0);
+        }
+
+        return $existingCarry + ($oldBase * $daysBeforeToday) - $spentBeforeToday;
     }
 
     private function payload(User $user): array

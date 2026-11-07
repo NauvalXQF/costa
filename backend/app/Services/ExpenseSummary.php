@@ -220,6 +220,11 @@ class ExpenseSummary
 
         $days = (int) $startDate->diffInDays($todayStart) + 1;
 
+        $carry = 0;
+        if ((string) Setting::getFor($user->id, 'food_carry_month', '') === $now->format('Y-m')) {
+            $carry = (int) Setting::getFor($user->id, 'food_balance_carry', 0);
+        }
+
         $spentSinceStart = (int) Expense::query()
             ->where('user_id', $user->id)
             ->where('category_id', $category->id)
@@ -234,8 +239,8 @@ class ExpenseSummary
 
         $spentBeforeToday = $spentSinceStart - $spentToday;
 
-        $allowanceToday = $base + ($base * ($days - 1)) - $spentBeforeToday;
-        $balance = ($base * $days) - $spentSinceStart;
+        $allowanceToday = $carry + ($base * $days) - $spentBeforeToday;
+        $balance = $carry + ($base * $days) - $spentSinceStart;
 
         return [
             'base' => $base,
