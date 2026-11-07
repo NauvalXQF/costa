@@ -1,5 +1,7 @@
 package com.opankcs.costa.ui
 
+import android.app.LocaleManager
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -39,6 +42,7 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 import com.opankcs.costa.BuildConfig
+import com.opankcs.costa.R
 import com.opankcs.costa.data.Category
 import com.opankcs.costa.data.Prefs
 import com.opankcs.costa.notifications.CostaNotifications
@@ -48,6 +52,15 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
     val context = LocalContext.current
     val prefs = remember { Prefs(context) }
     val haptics = rememberCostaHaptics()
+    var showLanguageDialog by remember { mutableStateOf(false) }
+    val passwordUpdatedNotice = context.getString(R.string.notice_password_updated)
+    val currentLanguageCode = context.getSystemService(LocaleManager::class.java)
+        ?.applicationLocales?.get(0)?.language
+    val languageLabel = when (currentLanguageCode) {
+        "in" -> stringResource(R.string.language_indonesian)
+        "en" -> stringResource(R.string.language_english)
+        else -> stringResource(R.string.language_system)
+    }
 
     var baseUrl by rememberSaveable(state.baseUrl) { mutableStateOf(state.baseUrl) }
 
@@ -105,7 +118,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
     var hapticsEnabled by remember { mutableStateOf(prefs.hapticsEnabled) }
 
     LaunchedEffect(state.notice) {
-        if (state.notice == "Password diperbarui") {
+        if (state.notice == passwordUpdatedNotice) {
             currentPassword = ""
             newPassword = ""
             confirmPassword = ""
@@ -124,7 +137,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     Text(
-                        text = "Akun",
+                        text = stringResource(R.string.account),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -144,13 +157,13 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                             showNameDialog = true
                         },
                     ) {
-                        Text("Ubah nama")
+                        Text(stringResource(R.string.change_name))
                     }
                     OutlinedButton(
                         onClick = { haptics.tick(); viewModel.logout() },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text("Keluar", color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(R.string.logout), color = MaterialTheme.colorScheme.error)
                     }
                 }
             }
@@ -167,17 +180,17 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = "Kategori",
+                            text = stringResource(R.string.categories),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                         )
                         Spacer(Modifier.weight(1f))
                         TextButton(onClick = { haptics.tick(); showAddCategory = true }) {
-                            Text("+ Tambah")
+                            Text(stringResource(R.string.add_with_plus))
                         }
                     }
                     Text(
-                        text = "Atur urutan lewat tombol \"Atur urutan\" (tahan ⠿ lalu geser). ✎ mengedit kategori buatanmu; ✕ menyembunyikan kategori bawaan atau menghapus kategori buatanmu.",
+                        text = stringResource(R.string.category_help),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -185,11 +198,11 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         onClick = { haptics.tick(); showOrderDialog = true },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text("Atur urutan (drag & drop)")
+                        Text(stringResource(R.string.reorder_drag))
                     }
                     if (state.hiddenCategories.isNotEmpty()) {
                         TextButton(onClick = { haptics.tick(); viewModel.restoreCategories() }) {
-                            Text("Pulihkan ${state.hiddenCategories.size} kategori bawaan")
+                            Text(stringResource(R.string.restore_defaults, state.hiddenCategories.size))
                         }
                     }
 
@@ -199,7 +212,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
-                                text = "${category.icon ?: ""} ${category.name}".trim(),
+                                text = "${category.icon ?: ""} ${localizedCategoryName(context, category)}".trim(),
                                 style = MaterialTheme.typography.bodyLarge,
                                 modifier = Modifier.weight(1f),
                             )
@@ -236,12 +249,12 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
-                        text = "Export data",
+                        text = stringResource(R.string.export_data),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
-                        text = "Mutasi bulan ini (tanggal 1 sampai hari ini) disimpan ke folder Downloads HP.",
+                        text = stringResource(R.string.export_help),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -250,13 +263,13 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                             onClick = { viewModel.exportData("csv") },
                             modifier = Modifier.weight(1f),
                         ) {
-                            Text("Excel (CSV)")
+                            Text(stringResource(R.string.excel_csv))
                         }
                         Button(
                             onClick = { viewModel.exportData("pdf") },
                             modifier = Modifier.weight(1f),
                         ) {
-                            Text("PDF")
+                            Text(stringResource(R.string.pdf))
                         }
                     }
                 }
@@ -270,14 +283,14 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Text(
-                        text = "Server",
+                        text = stringResource(R.string.server),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
                     OutlinedTextField(
                         value = baseUrl,
                         onValueChange = { baseUrl = it },
-                        label = { Text("Base URL") },
+                        label = { Text(stringResource(R.string.server_base_url)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -285,7 +298,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         onClick = { haptics.confirm(); viewModel.saveBaseUrl(baseUrl) },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text("Simpan server")
+                        Text(stringResource(R.string.save_server))
                     }
                 }
             }
@@ -298,14 +311,14 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Text(
-                        text = "Budget periode",
+                        text = stringResource(R.string.budget_period),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
                     OutlinedTextField(
                         value = monthly,
                         onValueChange = { monthly = it },
-                        label = { Text("Budget bulanan (Rp)") },
+                        label = { Text(stringResource(R.string.monthly_budget)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -314,41 +327,41 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         onClick = { haptics.tick(); showDatePicker = true },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text("Mulai periode: ${formatDateLong(previewStart)}")
+                        Text(stringResource(R.string.period_start_button, formatDateLong(previewStart)))
                     }
                     OutlinedTextField(
                         value = food,
                         onValueChange = { food = it },
-                        label = { Text("Jatah makan harian (Rp)") },
+                        label = { Text(stringResource(R.string.food_daily_budget)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Text(
-                        text = "Jatah makan dihitung per hari dan saldonya berjalan otomatis (bonus/hutang ikut ke hari berikutnya). Kosongkan untuk menonaktifkan.",
+                        text = stringResource(R.string.food_help),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     if (monthlyValue > 0) {
                         Text(
-                            text = "Periode ${formatDateShort(previewStart)} - ${formatDateShort(previewPeriodEnd)} (${previewPeriodDays} hari)",
+                            text = stringResource(R.string.period_summary, formatDateShort(previewStart), formatDateShort(previewPeriodEnd), previewPeriodDays),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
-                            text = "Harian otomatis: ${formatRupiah(previewDaily)}",
+                            text = stringResource(R.string.daily_auto, formatRupiah(previewDaily)),
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.primary,
                         )
                         Text(
-                            text = "Minggu ini (${formatDateShort(previewEffectiveStart)} - ${formatDateShort(previewEffectiveEnd)}): ${formatRupiah(previewWeekly)}",
+                            text = stringResource(R.string.weekly_this, formatDateShort(previewEffectiveStart), formatDateShort(previewEffectiveEnd), formatRupiah(previewWeekly)),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     } else {
                         Text(
-                            text = "Isi budget bulanan untuk menghitung budget harian dan mingguan otomatis.",
+                            text = stringResource(R.string.fill_monthly),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -357,7 +370,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         onClick = { haptics.confirm(); viewModel.saveBudget(monthly, food, startDateMillis) },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text("Simpan budget")
+                        Text(stringResource(R.string.save_budget))
                     }
                 }
             }
@@ -370,13 +383,13 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     Text(
-                        text = "Notifikasi",
+                        text = stringResource(R.string.notifications),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
                     NotificationRow(
-                        title = "Pengingat harian",
-                        subtitle = "09:00, 12:00, 21:00 — hanya muncul kalau belum ada catatan hari ini",
+                        title = stringResource(R.string.daily_reminder),
+                        subtitle = stringResource(R.string.daily_reminder_sub),
                         checked = reminderEnabled,
                         onCheckedChange = {
                             haptics.toggle()
@@ -385,8 +398,8 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         },
                     )
                     NotificationRow(
-                        title = "Peringatan budget",
-                        subtitle = "Langsung saat budget harian/bulanan mencapai ≥80% (sekali per hari/bulan)",
+                        title = stringResource(R.string.budget_alert),
+                        subtitle = stringResource(R.string.budget_alert_sub),
                         checked = budgetEnabled,
                         onCheckedChange = {
                             haptics.toggle()
@@ -395,8 +408,8 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         },
                     )
                     NotificationRow(
-                        title = "Rekap mingguan",
-                        subtitle = "Minggu 21:30 — total minggu & kategori terbesar",
+                        title = stringResource(R.string.weekly_recap),
+                        subtitle = stringResource(R.string.weekly_recap_sub),
                         checked = weeklyEnabled,
                         onCheckedChange = {
                             haptics.toggle()
@@ -405,8 +418,8 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         },
                     )
                     NotificationRow(
-                        title = "Pengingat awal bulan",
-                        subtitle = "Tanggal 1 pukul 08:00 — saatnya atur budget bulan ini",
+                        title = stringResource(R.string.monthly_reset),
+                        subtitle = stringResource(R.string.monthly_reset_sub),
                         checked = monthlyEnabled,
                         onCheckedChange = {
                             haptics.toggle()
@@ -420,12 +433,12 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                                 context = context,
                                 channel = CostaNotifications.CHANNEL_REMINDER,
                                 id = 9001,
-                                title = "Tes notifikasi Costa",
-                                text = "Kalau kamu melihat ini, notifikasi Costa sudah aktif.",
+                                title = context.getString(R.string.test_notification_title),
+                                text = context.getString(R.string.test_notification_text),
                             )
                         },
                     ) {
-                        Text("Kirim tes notifikasi")
+                        Text(stringResource(R.string.send_test_notification))
                     }
                 }
             }
@@ -438,13 +451,13 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
-                        text = "Umpan balik",
+                        text = stringResource(R.string.feedback),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
                     NotificationRow(
-                        title = "Getaran (haptic)",
-                        subtitle = "Getar halus saat menekan tombol penting",
+                        title = stringResource(R.string.haptics),
+                        subtitle = stringResource(R.string.haptics_sub),
                         checked = hapticsEnabled,
                         onCheckedChange = {
                             haptics.toggle()
@@ -463,12 +476,12 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
-                        text = "Update aplikasi",
+                        text = stringResource(R.string.app_update),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
-                        text = "Versi terpasang: ${BuildConfig.VERSION_NAME}",
+                        text = stringResource(R.string.installed_version, BuildConfig.VERSION_NAME),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -476,11 +489,11 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         onClick = { haptics.tick(); viewModel.checkForUpdate() },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text("Cek update")
+                        Text(stringResource(R.string.check_update))
                     }
                     state.availableUpdate?.let { update ->
                         Text(
-                            text = "Versi ${update.versionName} tersedia",
+                            text = stringResource(R.string.version_available, update.versionName),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.secondary,
                         )
@@ -509,14 +522,14 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Text(
-                        text = "Keamanan",
+                        text = stringResource(R.string.security),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
                     OutlinedTextField(
                         value = currentPassword,
                         onValueChange = { currentPassword = it },
-                        label = { Text("Password saat ini") },
+                        label = { Text(stringResource(R.string.current_password)) },
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -524,7 +537,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                     OutlinedTextField(
                         value = newPassword,
                         onValueChange = { newPassword = it },
-                        label = { Text("Password baru (min. 8 karakter)") },
+                        label = { Text(stringResource(R.string.new_password)) },
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -532,7 +545,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                     OutlinedTextField(
                         value = confirmPassword,
                         onValueChange = { confirmPassword = it },
-                        label = { Text("Ulangi password baru") },
+                        label = { Text(stringResource(R.string.repeat_new_password)) },
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -542,7 +555,33 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         enabled = currentPassword.isNotBlank() && newPassword.isNotBlank() && confirmPassword.isNotBlank(),
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text("Ganti password")
+                        Text(stringResource(R.string.change_password))
+                    }
+                }
+            }
+        }
+
+        item {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.language),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = stringResource(R.string.language_current, languageLabel),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    OutlinedButton(
+                        onClick = { haptics.tick(); showLanguageDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(R.string.change_language))
                     }
                 }
             }
@@ -550,7 +589,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
 
         item {
             Text(
-                text = "Data pengeluaran disimpan di server pribadi Costa dan terpisah untuk setiap akun.",
+                text = stringResource(R.string.data_note),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -560,12 +599,12 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
     if (showNameDialog) {
         AlertDialog(
             onDismissRequest = { showNameDialog = false },
-            title = { Text("Ubah nama") },
+            title = { Text(stringResource(R.string.change_name)) },
             text = {
                 OutlinedTextField(
                     value = nameInput,
                     onValueChange = { nameInput = it },
-                    label = { Text("Nama tampilan") },
+                    label = { Text(stringResource(R.string.display_name)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -578,12 +617,12 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         showNameDialog = false
                     },
                 ) {
-                    Text("Simpan")
+                    Text(stringResource(R.string.save))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showNameDialog = false }) {
-                    Text("Batal")
+                    Text(stringResource(R.string.cancel))
                 }
             },
         )
@@ -592,20 +631,20 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
     if (showAddCategory) {
         AlertDialog(
             onDismissRequest = { showAddCategory = false },
-            title = { Text("Kategori baru") },
+            title = { Text(stringResource(R.string.new_category)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedTextField(
                         value = newCategoryName,
                         onValueChange = { newCategoryName = it },
-                        label = { Text("Nama kategori") },
+                        label = { Text(stringResource(R.string.category_name)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     OutlinedTextField(
                         value = newCategoryIcon,
                         onValueChange = { newCategoryIcon = it },
-                        label = { Text("Emoji (opsional, mis. 🎁)") },
+                        label = { Text(stringResource(R.string.emoji_example)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -621,12 +660,12 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         showAddCategory = false
                     },
                 ) {
-                    Text("Tambah")
+                    Text(stringResource(R.string.add))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showAddCategory = false }) {
-                    Text("Batal")
+                    Text(stringResource(R.string.cancel))
                 }
             },
         )
@@ -646,20 +685,20 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
     editingCategory?.let { category ->
         AlertDialog(
             onDismissRequest = { editingCategory = null },
-            title = { Text("Edit kategori") },
+            title = { Text(stringResource(R.string.edit_category)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedTextField(
                         value = editCategoryName,
                         onValueChange = { editCategoryName = it },
-                        label = { Text("Nama kategori") },
+                        label = { Text(stringResource(R.string.category_name)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     OutlinedTextField(
                         value = editCategoryIcon,
                         onValueChange = { editCategoryIcon = it },
-                        label = { Text("Emoji (opsional)") },
+                        label = { Text(stringResource(R.string.emoji_optional)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -673,12 +712,12 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         editingCategory = null
                     },
                 ) {
-                    Text("Simpan")
+                    Text(stringResource(R.string.save))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { editingCategory = null }) {
-                    Text("Batal")
+                    Text(stringResource(R.string.cancel))
                 }
             },
         )
@@ -688,6 +727,39 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
             initialMillis = startDateMillis,
             onDismiss = { showDatePicker = false },
             onSelected = { startDateMillis = it },
+        )
+    }
+
+    if (showLanguageDialog) {
+        AlertDialog(
+            onDismissRequest = { showLanguageDialog = false },
+            title = { Text(stringResource(R.string.language)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    listOf(
+                        "system" to R.string.language_system,
+                        "in" to R.string.language_indonesian,
+                        "en" to R.string.language_english,
+                    ).forEach { (code, label) ->
+                        TextButton(
+                            onClick = {
+                                haptics.tick()
+                                showLanguageDialog = false
+                                applyAppLanguage(context, code)
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(stringResource(label))
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showLanguageDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
         )
     }
 
@@ -718,3 +790,4 @@ private fun NotificationRow(
         Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
+

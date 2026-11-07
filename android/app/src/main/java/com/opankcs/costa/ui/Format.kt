@@ -12,7 +12,10 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-private val rupiahFormat = DecimalFormat("#,##0", DecimalFormatSymbols(Locale("id", "ID")))
+private val rupiahFormat = DecimalFormat("#,##0", DecimalFormatSymbols(Locale.getDefault()))
+
+private val isEnglish: Boolean
+    get() = Locale.getDefault().language == "en"
 
 fun formatRupiah(value: Long?): String = "Rp" + rupiahFormat.format(value ?: 0L)
 
@@ -70,12 +73,12 @@ fun formatTime(value: String?): String {
 }
 
 fun formatDateLabel(date: LocalDate?): String {
-    if (date == null) return "Tanpa tanggal"
+    if (date == null) return if (isEnglish) "No date" else "Tanpa tanggal"
     val today = LocalDate.now()
     return when (date) {
-        today -> "Hari ini"
-        today.minusDays(1) -> "Kemarin"
-        else -> date.format(DateTimeFormatter.ofPattern("d MMM yyyy", Locale("id", "ID")))
+        today -> if (isEnglish) "Today" else "Hari ini"
+        today.minusDays(1) -> if (isEnglish) "Yesterday" else "Kemarin"
+        else -> date.format(DateTimeFormatter.ofPattern("d MMM yyyy", Locale.getDefault()))
     }
 }
 
@@ -110,17 +113,22 @@ fun spentAtIsoForEdit(millis: Long?): String? {
 }
 
 fun formatDateMillisLabel(millis: Long?): String =
-    if (millis == null) "Hari ini" else formatDateLabel(utcMillisToLocalDate(millis))
+    if (millis == null) {
+        if (isEnglish) "Today" else "Hari ini"
+    } else {
+        formatDateLabel(utcMillisToLocalDate(millis))
+    }
 
 fun dateMillisFromIso(value: String?): Long? {
     val date = parseSpentAt(value)?.toLocalDate() ?: return null
     return localDateToUtcMillis(date)
 }
+
 fun formatDateShort(date: LocalDate): String =
-    date.format(DateTimeFormatter.ofPattern("d MMM", Locale("id", "ID")))
+    date.format(DateTimeFormatter.ofPattern("d MMM", Locale.getDefault()))
 
 fun formatDateLong(date: LocalDate): String =
-    date.format(DateTimeFormatter.ofPattern("d MMM yyyy", Locale("id", "ID")))
+    date.format(DateTimeFormatter.ofPattern("d MMM yyyy", Locale.getDefault()))
 
 fun localDateFromIsoDate(value: String?): LocalDate? = try {
     if (value.isNullOrBlank()) null else LocalDate.parse(value)

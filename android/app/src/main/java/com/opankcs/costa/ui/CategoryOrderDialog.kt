@@ -29,8 +29,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.opankcs.costa.R
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
@@ -47,6 +50,7 @@ fun CategoryOrderDialog(
     var ordered by remember { mutableStateOf(categories) }
     val listState = rememberLazyListState()
     val haptics = rememberCostaHaptics()
+    val context = LocalContext.current
 
     val reorderableState = rememberReorderableLazyListState(listState) { from, to ->
         ordered = ordered.toMutableList().apply {
@@ -71,12 +75,12 @@ fun CategoryOrderDialog(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Atur urutan kategori",
+                    text = stringResource(R.string.reorder_categories),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    text = "Tahan ikon ⠿ lalu geser untuk memindahkan posisi.",
+                    text = stringResource(R.string.reorder_help),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -113,7 +117,7 @@ fun CategoryOrderDialog(
                                 )
                                 Spacer(Modifier.width(8.dp))
                                 Text(
-                                    text = "${category.icon ?: ""} ${category.name}".trim(),
+                                    text = "${category.icon ?: ""} ${localizedCategoryName(context, category)}".trim(),
                                     style = MaterialTheme.typography.bodyLarge,
                                     modifier = Modifier.weight(1f),
                                 )
@@ -134,7 +138,7 @@ fun CategoryOrderDialog(
                             onDismiss()
                         },
                     ) {
-                        Text("Batal")
+                        Text(stringResource(R.string.cancel))
                     }
                     Spacer(Modifier.width(8.dp))
                     Button(
@@ -143,7 +147,7 @@ fun CategoryOrderDialog(
                             onSave(ordered)
                         },
                     ) {
-                        Text("Simpan urutan")
+                        Text(stringResource(R.string.save_order))
                     }
                 }
             }

@@ -28,6 +28,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.opankcs.costa.R
 
 @Composable
 fun LoginScreen(
@@ -62,7 +64,7 @@ fun LoginScreen(
             fontWeight = FontWeight.Bold,
         )
         Text(
-            text = if (isRegister) "Buat akun baru" else "Catatan pengeluaran harian",
+            text = if (isRegister) stringResource(R.string.create_account) else stringResource(R.string.app_tagline),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -73,7 +75,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Nama") },
+                label = { Text(stringResource(R.string.name)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -83,7 +85,7 @@ fun LoginScreen(
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email") },
+            label = { Text(stringResource(R.string.email)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
@@ -94,7 +96,7 @@ fun LoginScreen(
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Password") },
+            label = { Text(stringResource(R.string.password)) },
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             singleLine = true,
@@ -106,7 +108,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = confirmation,
                 onValueChange = { confirmation = it },
-                label = { Text("Ulangi password") },
+                label = { Text(stringResource(R.string.repeat_password)) },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 singleLine = true,
@@ -116,7 +118,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = inviteCode,
                 onValueChange = { inviteCode = it },
-                label = { Text("Kode undangan") },
+                label = { Text(stringResource(R.string.invite_code)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -128,13 +130,13 @@ fun LoginScreen(
             OutlinedTextField(
                 value = baseUrl,
                 onValueChange = { baseUrl = it },
-                label = { Text("Base URL server") },
+                label = { Text(stringResource(R.string.server_base_url)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
         } else {
             TextButton(onClick = { haptics.tick(); showServer = true }) {
-                Text("Ubah server")
+                Text(stringResource(R.string.change_server))
             }
         }
 
@@ -161,7 +163,7 @@ fun LoginScreen(
                     strokeWidth = 2.dp,
                 )
             } else {
-                Text(if (isRegister) "Daftar" else "Masuk")
+                Text(if (isRegister) stringResource(R.string.register) else stringResource(R.string.login))
             }
         }
 
@@ -183,14 +185,14 @@ fun LoginScreen(
             },
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text(if (isRegister) "Sudah punya akun? Masuk" else "Belum punya akun? Daftar")
+            Text(if (isRegister) stringResource(R.string.already_have_account) else stringResource(R.string.no_account))
         }
 
         Text(
             text = if (isRegister) {
-                "Kode undangan bisa diminta ke Nauval."
+                stringResource(R.string.invite_hint)
             } else {
-                "Data Costa terpisah untuk setiap akun."
+                stringResource(R.string.data_separate)
             },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -1,6 +1,7 @@
 package com.opankcs.costa.notifications
 
 import android.content.Context
+import com.opankcs.costa.R
 import com.opankcs.costa.data.Prefs
 import com.opankcs.costa.data.Summary
 import com.opankcs.costa.ui.formatRupiah
@@ -29,9 +30,13 @@ object BudgetAlerts {
             context = context,
             channel = CostaNotifications.CHANNEL_BUDGET,
             id = 2101,
-            title = "Jatah makan besok turun",
-            text = "Kelebihan makan ${formatRupiah(food.debt)}. Jatah besok " +
-                "${formatRupiah(food.tomorrowAllowance)} (normal ${formatRupiah(food.base)}/hari).",
+            title = context.getString(R.string.notif_food_title),
+            text = context.getString(
+                R.string.notif_food_text,
+                formatRupiah(food.debt),
+                formatRupiah(food.tomorrowAllowance),
+                formatRupiah(food.base),
+            ),
         )
     }
 
@@ -56,12 +61,17 @@ object BudgetAlerts {
 
         if (level > previousLevel) {
             val title = if (level >= 100) {
-                "Budget harian terlampaui"
+                context.getString(R.string.notif_daily_100_title)
             } else {
-                "Budget harian ≥80% terpakai"
+                context.getString(R.string.notif_daily_80_title)
             }
-            val text = "Hari ini ${formatRupiah(today.total)} dari ${formatRupiah(limit)} " +
-                "(${percent.toInt()}%). Sisa ${formatRupiah(today.budget.remaining)}."
+            val text = context.getString(
+                R.string.notif_daily_budget_text,
+                formatRupiah(today.total),
+                formatRupiah(limit),
+                percent.toInt(),
+                formatRupiah(today.budget.remaining),
+            )
 
             CostaNotifications.show(
                 context = context,
@@ -96,12 +106,17 @@ object BudgetAlerts {
 
         if (level > previousLevel) {
             val title = if (level >= 100) {
-                "Budget bulanan terlampaui"
+                context.getString(R.string.notif_monthly_100_title)
             } else {
-                "Budget bulanan ≥80% terpakai"
+                context.getString(R.string.notif_monthly_80_title)
             }
-            val text = "Periode ini ${formatRupiah(month.total)} dari ${formatRupiah(limit)} " +
-                "(${percent.toInt()}%). Sisa aman ${formatRupiah(month.month.safeToSpendPerDay)}/hari."
+            val text = context.getString(
+                R.string.notif_monthly_budget_text,
+                formatRupiah(month.total),
+                formatRupiah(limit),
+                percent.toInt(),
+                formatRupiah(month.month.safeToSpendPerDay),
+            )
 
             CostaNotifications.show(
                 context = context,

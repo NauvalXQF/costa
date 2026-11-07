@@ -31,13 +31,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.opankcs.costa.R
 import kotlinx.coroutines.delay
+import java.util.Locale
 
 @Composable
 fun CostaApp(viewModel: CostaViewModel) {
     val state by viewModel.state.collectAsState()
     var tab by rememberSaveable { mutableStateOf(0) }
     val haptics = rememberCostaHaptics()
+    val tagline = stringResource(R.string.app_tagline)
 
     LaunchedEffect(state.error) {
         if (state.error != null) {
@@ -48,17 +52,19 @@ fun CostaApp(viewModel: CostaViewModel) {
     state.availableUpdate?.let { update ->
         AlertDialog(
             onDismissRequest = viewModel::dismissUpdate,
-            title = { Text("Update tersedia") },
+            title = { Text(stringResource(R.string.update_available)) },
             text = {
+                val versionText = stringResource(R.string.update_version_available, update.versionName)
+                val notes = if (Locale.getDefault().language == "en" && update.notesEn.isNotBlank()) update.notesEn else update.notes
                 Column(
                     modifier = Modifier.verticalScroll(rememberScrollState()),
                 ) {
                     Text(
                         buildString {
-                            append("Versi ${update.versionName} sudah tersedia.")
-                            if (update.notes.isNotBlank()) {
+                            append(versionText)
+                            if (notes.isNotBlank()) {
                                 append("\n\n")
-                                append(update.notes)
+                                append(notes)
                             }
                         },
                     )
@@ -69,12 +75,12 @@ fun CostaApp(viewModel: CostaViewModel) {
                     onClick = { viewModel.downloadAndInstallUpdate() },
                     enabled = !state.updateDownloading,
                 ) {
-                    Text(if (state.updateDownloading) "Mengunduh..." else "Unduh & pasang")
+                    Text(if (state.updateDownloading) stringResource(R.string.downloading) else stringResource(R.string.download_install))
                 }
             },
             dismissButton = {
                 TextButton(onClick = viewModel::dismissUpdate) {
-                    Text("Nanti")
+                    Text(stringResource(R.string.later))
                 }
             },
         )
@@ -121,7 +127,7 @@ fun CostaApp(viewModel: CostaViewModel) {
                             fontWeight = FontWeight.Bold,
                         )
                         Text(
-                            text = state.userName.ifBlank { "Catatan pengeluaran harian" },
+                            text = state.userName.ifBlank { tagline },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -134,7 +140,7 @@ fun CostaApp(viewModel: CostaViewModel) {
                         )
                     } else {
                         TextButton(onClick = { haptics.tick(); viewModel.refresh() }) {
-                            Text("Muat ulang")
+                            Text(stringResource(R.string.refresh))
                         }
                     }
                 }
@@ -170,19 +176,19 @@ fun CostaApp(viewModel: CostaViewModel) {
                         selected = tab == 0,
                         onClick = { haptics.tick(); tab = 0 },
                         icon = { Text("🏠") },
-                        label = { Text("Beranda") },
+                        label = { Text(stringResource(R.string.nav_home)) },
                     )
                     NavigationBarItem(
                         selected = tab == 1,
                         onClick = { haptics.tick(); tab = 1 },
                         icon = { Text("📊") },
-                        label = { Text("Riwayat") },
+                        label = { Text(stringResource(R.string.nav_history)) },
                     )
                     NavigationBarItem(
                         selected = tab == 2,
                         onClick = { haptics.tick(); tab = 2 },
                         icon = { Text("⚙️") },
-                        label = { Text("Atur") },
+                        label = { Text(stringResource(R.string.nav_settings)) },
                     )
                 }
             }

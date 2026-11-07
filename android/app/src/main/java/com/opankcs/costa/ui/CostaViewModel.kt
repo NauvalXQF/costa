@@ -6,6 +6,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.opankcs.costa.BuildConfig
+import com.opankcs.costa.R
 import com.opankcs.costa.data.AppVersionResponse
 import com.opankcs.costa.data.Category
 import com.opankcs.costa.data.CostaRepository
@@ -47,6 +48,8 @@ data class CostaUiState(
 )
 
 class CostaViewModel(application: Application) : AndroidViewModel(application) {
+    private fun msg(id: Int, vararg args: Any): String = getApplication<Application>().getString(id, *args)
+
     private companion object {
         const val PAGE_SIZE = 200
     }
@@ -92,8 +95,8 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                 refresh()
             } catch (e: HttpException) {
                 val message = when (e.code()) {
-                    401, 422 -> "Email atau password salah."
-                    else -> "Server error (${e.code()})."
+                    401, 422 -> msg(R.string.error_login_invalid)
+                    else -> msg(R.string.error_server_code, e.code())
                 }
                 _state.update { it.copy(loading = false, isLoggedIn = false, error = message) }
             } catch (e: Exception) {
@@ -101,7 +104,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                     it.copy(
                         loading = false,
                         isLoggedIn = false,
-                        error = "Tidak bisa terhubung ke server. Cek Base URL.",
+                        error = msg(R.string.error_connect),
                     )
                 }
             }
@@ -143,9 +146,9 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                 refresh()
             } catch (e: HttpException) {
                 val message = if (e.code() == 422) {
-                    "Pendaftaran gagal: data tidak valid atau kode undangan salah."
+                    msg(R.string.error_register)
                 } else {
-                    "Server error (${e.code()})."
+                    msg(R.string.error_server_code, e.code())
                 }
                 _state.update { it.copy(loading = false, isLoggedIn = false, error = message) }
             } catch (e: Exception) {
@@ -153,7 +156,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                     it.copy(
                         loading = false,
                         isLoggedIn = false,
-                        error = "Tidak bisa terhubung ke server. Cek Base URL.",
+                        error = msg(R.string.error_connect),
                     )
                 }
             }
@@ -224,20 +227,20 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                         it.copy(
                             loading = false,
                             isLoggedIn = false,
-                            error = "Sesi berakhir, silakan masuk lagi.",
+                            error = msg(R.string.error_session_expired),
                             baseUrl = prefs.baseUrl,
                         )
                     }
                 } else {
                     _state.update {
-                        it.copy(loading = false, error = "Server error (${e.code()}).")
+                        it.copy(loading = false, error = msg(R.string.error_server_code, e.code()))
                     }
                 }
             } catch (e: Exception) {
                 _state.update {
                     it.copy(
                         loading = false,
-                        error = "Tidak bisa terhubung ke server. Cek Base URL.",
+                        error = msg(R.string.error_connect),
                     )
                 }
             }
@@ -246,7 +249,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
 
     fun updateName(name: String) {
         if (name.isBlank()) {
-            _state.update { it.copy(error = "Nama tidak boleh kosong") }
+            _state.update { it.copy(error = msg(R.string.error_name_empty)) }
             return
         }
 
@@ -254,10 +257,10 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val user = repository.updateProfile(name.trim())
                 prefs.userName = user?.name ?: name.trim()
-                _state.update { it.copy(notice = "Nama diperbarui", error = null) }
+                _state.update { it.copy(notice = msg(R.string.notice_name_updated), error = null) }
                 refresh()
             } catch (e: Exception) {
-                _state.update { it.copy(error = "Gagal memperbarui nama") }
+                _state.update { it.copy(error = msg(R.string.error_name_update)) }
             }
         }
     }
@@ -265,7 +268,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
     fun addExpense(amountText: String, categorySlug: String, note: String, dateMillis: Long? = null) {
         val amount = parseAmount(amountText)
         if (amount == null || amount <= 0L) {
-            _state.update { it.copy(error = "Nominal tidak valid") }
+            _state.update { it.copy(error = msg(R.string.error_invalid_amount)) }
             return
         }
 
@@ -277,10 +280,10 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                     note = note.ifBlank { null },
                     spentAt = spentAtIsoFromMillis(dateMillis),
                 )
-                _state.update { it.copy(notice = "Tercatat: ${formatRupiah(amount)}", error = null) }
+                _state.update { it.copy(notice = msg(R.string.notice_expense_saved, formatRupiah(amount)), error = null) }
                 refresh(checkBudgetAlerts = true)
             } catch (e: Exception) {
-                _state.update { it.copy(error = "Gagal menyimpan pengeluaran") }
+                _state.update { it.copy(error = msg(R.string.error_expense_save)) }
             }
         }
     }
@@ -294,7 +297,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
     ) {
         val amount = parseAmount(amountText)
         if (amount == null || amount <= 0L) {
-            _state.update { it.copy(error = "Nominal tidak valid") }
+            _state.update { it.copy(error = msg(R.string.error_invalid_amount)) }
             return
         }
 
@@ -309,10 +312,10 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                         spentAt = spentAtIsoForEdit(dateMillis),
                     ),
                 )
-                _state.update { it.copy(notice = "Pengeluaran diperbarui", error = null) }
+                _state.update { it.copy(notice = msg(R.string.notice_expense_updated), error = null) }
                 refresh(checkBudgetAlerts = true)
             } catch (e: Exception) {
-                _state.update { it.copy(error = "Gagal memperbarui pengeluaran") }
+                _state.update { it.copy(error = msg(R.string.error_expense_update)) }
             }
         }
     }
@@ -320,44 +323,44 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
     fun deleteExpense(id: Int) {
         viewModelScope.launch {
             runCatching { repository.deleteExpense(id) }
-            _state.update { it.copy(notice = "Pengeluaran dihapus") }
+            _state.update { it.copy(notice = msg(R.string.notice_expense_deleted)) }
             refresh(checkBudgetAlerts = true)
         }
     }
 
     fun addCategory(name: String, icon: String) {
         if (name.isBlank()) {
-            _state.update { it.copy(error = "Nama kategori wajib diisi") }
+            _state.update { it.copy(error = msg(R.string.error_category_name_required)) }
             return
         }
 
         viewModelScope.launch {
             try {
                 repository.createCategory(name.trim(), icon.trim().ifBlank { null })
-                _state.update { it.copy(notice = "Kategori ditambahkan", error = null) }
+                _state.update { it.copy(notice = msg(R.string.notice_category_added), error = null) }
                 refresh()
             } catch (e: HttpException) {
-                val message = if (e.code() == 422) "Kategori sudah ada atau tidak valid." else "Gagal menambah kategori (${e.code()})"
+                val message = if (e.code() == 422) msg(R.string.error_category_exists) else msg(R.string.error_category_add_code, e.code())
                 _state.update { it.copy(error = message) }
             } catch (e: Exception) {
-                _state.update { it.copy(error = "Gagal menambah kategori") }
+                _state.update { it.copy(error = msg(R.string.error_category_add)) }
             }
         }
     }
 
     fun updateCategory(id: Int, name: String, icon: String) {
         if (name.isBlank()) {
-            _state.update { it.copy(error = "Nama kategori wajib diisi") }
+            _state.update { it.copy(error = msg(R.string.error_category_name_required)) }
             return
         }
 
         viewModelScope.launch {
             try {
                 repository.updateCategory(id, name.trim(), icon.trim().ifBlank { null })
-                _state.update { it.copy(notice = "Kategori diperbarui", error = null) }
+                _state.update { it.copy(notice = msg(R.string.notice_category_updated), error = null) }
                 refresh()
             } catch (e: Exception) {
-                _state.update { it.copy(error = "Gagal memperbarui kategori") }
+                _state.update { it.copy(error = msg(R.string.error_category_update)) }
             }
         }
     }
@@ -366,10 +369,10 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 repository.reorderCategories(ordered.map { it.slug })
-                _state.update { it.copy(notice = "Urutan kategori disimpan", error = null) }
+                _state.update { it.copy(notice = msg(R.string.notice_category_reordered), error = null) }
                 refresh()
             } catch (e: Exception) {
-                _state.update { it.copy(error = "Gagal mengubah urutan kategori") }
+                _state.update { it.copy(error = msg(R.string.error_category_reorder)) }
             }
         }
     }
@@ -390,7 +393,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                 repository.reorderCategories(list.map { it.slug })
                 refresh()
             } catch (e: Exception) {
-                _state.update { it.copy(error = "Gagal mengubah urutan kategori") }
+                _state.update { it.copy(error = msg(R.string.error_category_reorder)) }
             }
         }
     }
@@ -399,13 +402,13 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 repository.deleteCategory(id)
-                _state.update { it.copy(notice = "Kategori dihapus", error = null) }
+                _state.update { it.copy(notice = msg(R.string.notice_category_deleted), error = null) }
                 refresh()
             } catch (e: HttpException) {
-                val message = if (e.code() == 422) "Kategori masih dipakai transaksi." else "Gagal menghapus kategori (${e.code()})"
+                val message = if (e.code() == 422) msg(R.string.error_category_in_use) else msg(R.string.error_category_delete_code, e.code())
                 _state.update { it.copy(error = message) }
             } catch (e: Exception) {
-                _state.update { it.copy(error = "Gagal menghapus kategori") }
+                _state.update { it.copy(error = msg(R.string.error_category_delete)) }
             }
         }
     }
@@ -426,8 +429,8 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                     )
                     _state.update {
                         it.copy(
-                            notice = if (saved) "PDF disimpan di folder Downloads" else null,
-                            error = if (saved) null else "Gagal menyimpan PDF",
+                            notice = if (saved) msg(R.string.notice_pdf_saved) else null,
+                            error = if (saved) null else msg(R.string.error_pdf_save),
                         )
                     }
                 } else {
@@ -440,13 +443,13 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                     )
                     _state.update {
                         it.copy(
-                            notice = if (saved) "CSV disimpan di folder Downloads" else null,
-                            error = if (saved) null else "Gagal menyimpan CSV",
+                            notice = if (saved) msg(R.string.notice_csv_saved) else null,
+                            error = if (saved) null else msg(R.string.error_csv_save),
                         )
                     }
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(error = "Gagal export data") }
+                _state.update { it.copy(error = msg(R.string.error_export)) }
             }
         }
     }
@@ -455,40 +458,40 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 repository.restoreCategories()
-                _state.update { it.copy(notice = "Kategori bawaan dipulihkan", error = null) }
+                _state.update { it.copy(notice = msg(R.string.notice_categories_restored), error = null) }
                 refresh()
             } catch (e: Exception) {
-                _state.update { it.copy(error = "Gagal memulihkan kategori") }
+                _state.update { it.copy(error = msg(R.string.error_categories_restore)) }
             }
         }
     }
 
     fun changePassword(current: String, new: String, confirmation: String) {
         if (current.isBlank() || new.length < 8) {
-            _state.update { it.copy(error = "Password baru minimal 8 karakter") }
+            _state.update { it.copy(error = msg(R.string.error_password_min)) }
             return
         }
         if (new != confirmation) {
-            _state.update { it.copy(error = "Konfirmasi password tidak cocok") }
+            _state.update { it.copy(error = msg(R.string.error_password_mismatch)) }
             return
         }
 
         viewModelScope.launch {
             try {
                 repository.changePassword(current, new, confirmation)
-                _state.update { it.copy(notice = "Password diperbarui", error = null) }
+                _state.update { it.copy(notice = msg(R.string.notice_password_updated), error = null) }
             } catch (e: HttpException) {
-                val message = if (e.code() == 422) "Password lama salah." else "Gagal mengganti password (${e.code()})"
+                val message = if (e.code() == 422) msg(R.string.error_password_old) else msg(R.string.error_password_code, e.code())
                 _state.update { it.copy(error = message) }
             } catch (e: Exception) {
-                _state.update { it.copy(error = "Gagal mengganti password") }
+                _state.update { it.copy(error = msg(R.string.error_password_change)) }
             }
         }
     }
 
     fun saveBaseUrl(baseUrl: String) {
         prefs.baseUrl = baseUrl
-        _state.update { it.copy(notice = "Server disimpan", error = null) }
+        _state.update { it.copy(notice = msg(R.string.notice_server_saved), error = null) }
         refresh()
     }
 
@@ -502,10 +505,10 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                         budgetStartDate = startDateMillis?.let { utcMillisToLocalDate(it).toString() },
                     ),
                 )
-                _state.update { it.copy(notice = "Budget disimpan", error = null) }
+                _state.update { it.copy(notice = msg(R.string.notice_budget_saved), error = null) }
                 refresh()
             } catch (e: Exception) {
-                _state.update { it.copy(error = "Gagal menyimpan budget") }
+                _state.update { it.copy(error = msg(R.string.error_budget_save)) }
             }
         }
     }
@@ -520,14 +523,14 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                 } else if (!silent) {
                     _state.update {
                         it.copy(
-                            notice = "Aplikasi sudah versi terbaru (${BuildConfig.VERSION_NAME})",
+                            notice = msg(R.string.notice_app_latest, BuildConfig.VERSION_NAME),
                             error = null,
                         )
                     }
                 }
             } catch (e: Exception) {
                 if (!silent) {
-                    _state.update { it.copy(error = "Gagal memeriksa update") }
+                    _state.update { it.copy(error = msg(R.string.error_update_check)) }
                 }
             }
         }
@@ -571,13 +574,13 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                     it.copy(
                         updateDownloading = false,
                         availableUpdate = null,
-                        notice = "Ikuti petunjuk pemasangan untuk menyelesaikan update",
+                        notice = msg(R.string.notice_update_install),
                         error = null,
                     )
                 }
             } catch (e: Exception) {
                 _state.update {
-                    it.copy(updateDownloading = false, error = "Gagal mengunduh update")
+                    it.copy(updateDownloading = false, error = msg(R.string.error_update_download))
                 }
             }
         }
@@ -614,7 +617,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                 _state.update {
                     it.copy(
                         loadingMoreHistory = false,
-                        error = "Gagal memuat riwayat lama",
+                        error = msg(R.string.error_history_load),
                     )
                 }
             }

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.opankcs.costa.data.CostaRepository
+import com.opankcs.costa.R
 import com.opankcs.costa.data.Prefs
 
 class DailyCheckWorker(
@@ -23,8 +24,8 @@ class DailyCheckWorker(
                         context = context,
                         channel = CostaNotifications.CHANNEL_REMINDER,
                         id = 1001,
-                        title = "Belum ada catatan hari ini",
-                        text = "Sempatkan catat pengeluaran hari ini. Ketuk untuk membuka Costa.",
+                        title = context.getString(R.string.notif_daily_title),
+                        text = context.getString(R.string.notif_daily_text),
                     )
                 }
             }

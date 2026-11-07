@@ -178,6 +178,7 @@ data class AppVersionResponse(
     @SerializedName("version_name") val versionName: String = "",
     @SerializedName("apk_url") val apkUrl: String = "",
     val notes: String = "",
+    @SerializedName("notes_en") val notesEn: String = "",
 )
 
 data class MeResponse(

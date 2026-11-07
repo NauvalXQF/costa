@@ -54,6 +54,12 @@ class Prefs(context: Context) {
             sp.edit().putBoolean("notify_monthly_reset", value).apply()
         }
 
+
+    var appLanguage: String
+        get() = sp.getString("app_language", "system") ?: "system"
+        set(value) {
+            sp.edit().putString("app_language", value).apply()
+        }
     var hapticsEnabled: Boolean
         get() = sp.getBoolean("haptics_enabled", true)
         set(value) {

@@ -36,6 +36,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.opankcs.costa.R
 import com.opankcs.costa.data.Expense
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,7 +69,7 @@ fun HomeScreen(state: CostaUiState, viewModel: CostaViewModel) {
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            item { SummaryCard(title = "Hari ini", summary = state.today) }
+            item { SummaryCard(title = stringResource(R.string.today), summary = state.today) }
 
             state.today?.foodBudget?.let { food ->
                 item { FoodBudgetCard(food) }
@@ -80,14 +82,14 @@ fun HomeScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         Text(
-                            text = "Catat pengeluaran",
+                            text = stringResource(R.string.record_expense),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                         )
                         OutlinedTextField(
                             value = amount,
                             onValueChange = { amount = it },
-                            label = { Text("Nominal (mis. 25k / 25000)") },
+                            label = { Text(stringResource(R.string.amount_hint)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
@@ -131,7 +133,7 @@ fun HomeScreen(state: CostaUiState, viewModel: CostaViewModel) {
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
-                                text = "Tanggal",
+                                text = stringResource(R.string.date),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -139,7 +141,7 @@ fun HomeScreen(state: CostaUiState, viewModel: CostaViewModel) {
                             TextButton(onClick = { haptics.tick(); showDatePicker = true }) {
                                 Text(
                                     if (selectedDateMillis == 0L) {
-                                        "Hari ini"
+                                        stringResource(R.string.today)
                                     } else {
                                         formatDateMillisLabel(selectedDateMillis)
                                     },
@@ -149,7 +151,7 @@ fun HomeScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         OutlinedTextField(
                             value = note,
                             onValueChange = { note = it },
-                            label = { Text("Catatan (opsional)") },
+                            label = { Text(stringResource(R.string.note_optional)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                         )
@@ -170,7 +172,7 @@ fun HomeScreen(state: CostaUiState, viewModel: CostaViewModel) {
                             enabled = amount.isNotBlank() && selectedCategory != null && !state.loading,
                             modifier = Modifier.fillMaxWidth(),
                         ) {
-                            Text("Simpan")
+                            Text(stringResource(R.string.save))
                         }
                     }
                 }
@@ -182,7 +184,7 @@ fun HomeScreen(state: CostaUiState, viewModel: CostaViewModel) {
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = "Pengeluaran terakhir",
+                        text = stringResource(R.string.latest_expenses),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -193,7 +195,7 @@ fun HomeScreen(state: CostaUiState, viewModel: CostaViewModel) {
             if (state.expenses.isEmpty()) {
                 item {
                     Text(
-                        text = "Belum ada pengeluaran. Catat yang pertama di atas.",
+                        text = stringResource(R.string.no_expenses),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }

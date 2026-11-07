@@ -26,30 +26,30 @@ object CostaNotifications {
             manager.createNotificationChannel(
                 NotificationChannel(
                     CHANNEL_REMINDER,
-                    "Pengingat harian",
+                    context.getString(R.string.channel_reminder_name),
                     NotificationManager.IMPORTANCE_DEFAULT,
                 ).apply {
-                    description = "Pengingat mencatat pengeluaran"
+                    description = context.getString(R.string.channel_reminder_desc)
                 },
             )
 
             manager.createNotificationChannel(
                 NotificationChannel(
                     CHANNEL_BUDGET,
-                    "Peringatan budget",
+                    context.getString(R.string.channel_budget_name),
                     NotificationManager.IMPORTANCE_HIGH,
                 ).apply {
-                    description = "Peringatan saat budget hampir habis atau terlampaui"
+                    description = context.getString(R.string.channel_budget_desc)
                 },
             )
 
             manager.createNotificationChannel(
                 NotificationChannel(
                     CHANNEL_RECAP,
-                    "Rekap mingguan",
+                    context.getString(R.string.channel_recap_name),
                     NotificationManager.IMPORTANCE_DEFAULT,
                 ).apply {
-                    description = "Ringkasan pengeluaran mingguan"
+                    description = context.getString(R.string.channel_recap_desc)
                 },
             )
         }

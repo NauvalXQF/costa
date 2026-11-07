@@ -1,0 +1,6 @@
+<resources>
+    <plurals name="transactions_count">
+        <item quantity="one">%1$d transaksi</item>
+        <item quantity="other">%1$d transaksi</item>
+    </plurals>
+</resources>

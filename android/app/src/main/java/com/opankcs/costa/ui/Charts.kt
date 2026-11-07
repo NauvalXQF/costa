@@ -22,8 +22,11 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.opankcs.costa.R
 import com.opankcs.costa.data.CategoryTotal
 
 private val chartPalette = listOf(
@@ -39,9 +42,10 @@ private val chartPalette = listOf(
 
 @Composable
 fun CategoryDonutChart(items: List<CategoryTotal>, total: Long) {
+    val context = LocalContext.current
     if (items.isEmpty() || total <= 0L) {
         Text(
-            text = "Belum ada data untuk grafik.",
+            text = stringResource(R.string.chart_empty),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -78,7 +82,7 @@ fun CategoryDonutChart(items: List<CategoryTotal>, total: Long) {
                     color = MaterialTheme.colorScheme.primary,
                 )
                 Text(
-                    text = "total",
+                    text = stringResource(R.string.chart_total),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -101,7 +105,7 @@ fun CategoryDonutChart(items: List<CategoryTotal>, total: Long) {
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text = item.name ?: "-",
+                        text = localizedCategoryName(context, item),
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.weight(1f),
                         maxLines = 1,

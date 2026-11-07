@@ -33,6 +33,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.opankcs.costa.R
 import com.opankcs.costa.data.Expense
 
 @Composable
@@ -92,14 +94,14 @@ fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
         ) {
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    PeriodChip("Minggu ini", period == "week") { period = "week" }
-                    PeriodChip("Bulan ini", period == "month") { period = "month" }
+                    PeriodChip(stringResource(R.string.this_week), period == "week") { period = "week" }
+                    PeriodChip(stringResource(R.string.this_month), period == "month") { period = "month" }
                 }
             }
 
             item {
                 SummaryCard(
-                    title = if (period == "week") "Minggu ini" else "Bulan ini",
+                    title = if (period == "week") stringResource(R.string.this_week) else stringResource(R.string.this_month),
                     summary = summary,
                 )
             }
@@ -111,7 +113,7 @@ fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         Text(
-                            text = "Distribusi kategori",
+                            text = stringResource(R.string.category_distribution),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                         )
@@ -125,7 +127,7 @@ fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
 
             item {
                 Text(
-                    text = "Riwayat pengeluaran",
+                    text = stringResource(R.string.expense_history),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -134,7 +136,7 @@ fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
             if (state.expenses.isEmpty()) {
                 item {
                     Text(
-                        text = "Belum ada riwayat.",
+                        text = stringResource(R.string.no_history),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -171,9 +173,9 @@ fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
                     ) {
                         Text(
                             if (state.loadingMoreHistory) {
-                                "Memuat..."
+                                stringResource(R.string.loading)
                             } else {
-                                "Muat lebih banyak"
+                                stringResource(R.string.load_more)
                             },
                         )
                     }

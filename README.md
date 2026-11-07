@@ -18,6 +18,7 @@ A personal expense tracker made for students: a **Laravel API** and a **native A
 - **Exports** — monthly mutation as **CSV** or **PDF**, saved directly to the phone's Downloads folder.
 - **Notifications** — reminders at 09:00, 12:00, and 21:00 when nothing is logged yet, real-time budget warnings at ≥80%/100% (once per day for daily and once per month for monthly), a food-allowance warning, weekly recap, and a monthly budget reset reminder.
 - **In-app updates** — the app checks the server for a newer APK, shows a changelog dialog, and installs the update without leaving the app.
+- **Bilingual UI** — switch between Indonesian and English (or follow the system language); built-in category names, notifications, and update notes follow the selected app language.
 - **Haptic feedback** — curated ticks, confirmations and error haptics for primary actions, with a toggle in Settings.
 - **Dark UI** with a graphite + amber theme, pull-to-refresh, and Android 15+ edge-to-edge support.
 

@@ -40,12 +40,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.opankcs.costa.data.Category
 import com.opankcs.costa.data.Expense
 import com.opankcs.costa.data.FoodBudget
+import com.opankcs.costa.R
 import com.opankcs.costa.data.Summary
 
 @Composable
@@ -86,7 +90,7 @@ fun SummaryCard(title: String, summary: Summary?) {
                         .clip(RoundedCornerShape(3.dp)),
                 )
                 Text(
-                    text = "Budget ${formatRupiah(budget.limit)} · sisa ${formatRupiah(budget.remaining)}",
+                    text = stringResource(R.string.budget_summary, formatRupiah(budget.limit), formatRupiah(budget.remaining)),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -102,14 +106,14 @@ fun SummaryCard(title: String, summary: Summary?) {
 
             summary?.month?.safeToSpendPerDay?.let { safe ->
                 Text(
-                    text = "Aman belanja ${formatRupiah(safe)}/hari (sisa periode ini)",
+                    text = stringResource(R.string.safe_to_spend, formatRupiah(safe)),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
             Text(
-                text = "${summary?.count ?: 0} transaksi",
+                text = pluralStringResource(R.plurals.transactions_count, summary?.count ?: 0, summary?.count ?: 0),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -130,7 +134,7 @@ fun FoodBudgetCard(food: FoodBudget) {
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
-                text = "Jatah makan hari ini",
+                text = stringResource(R.string.food_today),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -143,7 +147,7 @@ fun FoodBudgetCard(food: FoodBudget) {
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    text = "dari ${formatRupiah(food.base)}/hari",
+                    text = stringResource(R.string.food_from, formatRupiah(food.base)),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 4.dp),
@@ -179,9 +183,9 @@ fun FoodBudgetCard(food: FoodBudget) {
 
             Text(
                 text = if (isOverToday) {
-                    "Lewat ${formatRupiah(food.spentToday - food.allowanceToday)} dari jatah hari ini"
+                    stringResource(R.string.food_over, formatRupiah(food.spentToday - food.allowanceToday))
                 } else {
-                    "Sisa jatah hari ini ${formatRupiah(remainingToday)}"
+                    stringResource(R.string.food_remaining, formatRupiah(remainingToday))
                 },
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.SemiBold,
@@ -193,7 +197,7 @@ fun FoodBudgetCard(food: FoodBudget) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "Terpakai hari ini ${formatRupiah(food.spentToday)}",
+                    text = stringResource(R.string.food_used, formatRupiah(food.spentToday)),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.weight(1f),
@@ -209,9 +213,9 @@ fun FoodBudgetCard(food: FoodBudget) {
             }
 
             val status = when {
-                food.debt > 0 -> "▼ Hutang jajan ${formatRupiah(food.debt)} · besok jatah ${formatRupiah(food.tomorrowAllowance)}"
-                food.bonus > 0 -> "▲ Bonus ${formatRupiah(food.bonus)} · besok jatah ${formatRupiah(food.tomorrowAllowance)}"
-                else -> "Pas · besok jatah ${formatRupiah(food.tomorrowAllowance)}"
+                food.debt > 0 -> stringResource(R.string.food_debt, formatRupiah(food.debt), formatRupiah(food.tomorrowAllowance))
+                food.bonus > 0 -> stringResource(R.string.food_bonus, formatRupiah(food.bonus), formatRupiah(food.tomorrowAllowance))
+                else -> stringResource(R.string.food_even, formatRupiah(food.tomorrowAllowance))
             }
             val statusContentColor = when {
                 food.debt > 0 -> MaterialTheme.colorScheme.error
@@ -236,6 +240,7 @@ fun CategoryChips(
 ) {
     val listState = rememberLazyListState()
     val haptics = rememberCostaHaptics()
+    val context = LocalContext.current
 
     LaunchedEffect(selected, categories) {
         val index = categories.indexOfFirst { it.slug == selected }
@@ -270,7 +275,7 @@ fun CategoryChips(
                     .padding(horizontal = 12.dp, vertical = 8.dp),
             ) {
                 Text(
-                    text = "${category.icon ?: ""} ${category.name}".trim(),
+                    text = "${category.icon ?: ""} ${localizedCategoryName(context, category)}".trim(),
                     style = MaterialTheme.typography.labelLarge,
                     color = if (isSelected) MaterialTheme.colorScheme.onPrimary
                     else MaterialTheme.colorScheme.onSurface,
@@ -287,6 +292,7 @@ fun ExpenseRow(
     onDelete: (() -> Unit)? = null,
 ) {
     val haptics = rememberCostaHaptics()
+    val context = LocalContext.current
 
     Row(
         modifier = Modifier
@@ -307,7 +313,7 @@ fun ExpenseRow(
         Spacer(Modifier.width(10.dp))
         Column(Modifier.weight(1f)) {
             Text(
-                text = expense.category?.name ?: "-",
+                text = localizedCategoryName(context, expense.category),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
             )
@@ -356,23 +362,25 @@ fun DeleteExpenseDialog(
     onConfirm: () -> Unit,
 ) {
     val haptics = rememberCostaHaptics()
+    val context = LocalContext.current
 
     val description = buildString {
         append(expense.category?.icon ?: "")
         append(" ")
-        append(expense.category?.name ?: "-")
+        append(localizedCategoryName(context, expense.category))
         append(" · ")
         append(formatRupiah(expense.amount))
         expense.note?.let {
             append("\n")
             append(it)
         }
-        append("\n\nData yang dihapus tidak bisa dikembalikan.")
+        append("\n\n")
+        append(context.getString(R.string.delete_cannot_undo))
     }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Hapus pengeluaran?") },
+        title = { Text(stringResource(R.string.delete_expense_title)) },
         text = { Text(description) },
         confirmButton = {
             TextButton(
@@ -382,7 +390,7 @@ fun DeleteExpenseDialog(
                 },
             ) {
                 Text(
-                    text = "Hapus",
+                    text = stringResource(R.string.delete),
                     color = MaterialTheme.colorScheme.error,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -395,7 +403,7 @@ fun DeleteExpenseDialog(
                     onDismiss()
                 },
             ) {
-                Text("Batal")
+                Text(stringResource(R.string.cancel))
             }
         },
     )
@@ -423,7 +431,7 @@ fun CostaDatePickerDialog(
                     onDismiss()
                 },
             ) {
-                Text("OK")
+                Text(stringResource(R.string.ok))
             }
         },
         dismissButton = {
@@ -433,7 +441,7 @@ fun CostaDatePickerDialog(
                     onDismiss()
                 },
             ) {
-                Text("Batal")
+                Text(stringResource(R.string.cancel))
             }
         },
     ) {
@@ -449,6 +457,7 @@ fun EditExpenseDialog(
     onSave: (amountText: String, categorySlug: String, note: String, dateMillis: Long?) -> Unit,
 ) {
     val haptics = rememberCostaHaptics()
+    val context = LocalContext.current
 
     var amount by remember { mutableStateOf(expense.amount.toString()) }
     var note by remember { mutableStateOf(expense.note ?: "") }
@@ -459,7 +468,7 @@ fun EditExpenseDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Edit pengeluaran") },
+        title = { Text(stringResource(R.string.edit_expense)) },
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
@@ -468,7 +477,7 @@ fun EditExpenseDialog(
                 OutlinedTextField(
                     value = amount,
                     onValueChange = { amount = it },
-                    label = { Text("Nominal") },
+                    label = { Text(stringResource(R.string.amount)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
@@ -481,14 +490,14 @@ fun EditExpenseDialog(
                 OutlinedTextField(
                     value = note,
                     onValueChange = { note = it },
-                    label = { Text("Catatan") },
+                    label = { Text(stringResource(R.string.note)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 TextButton(onClick = { showDatePicker = true }) {
                     val label = dateMillis?.let { formatDateMillisLabel(it) }
                         ?: formatDateLabel(parseSpentAt(expense.spentAt)?.toLocalDate())
-                    Text("Tanggal: $label")
+                    Text(context.getString(R.string.date_field, label))
                 }
                 error?.let {
                     Text(
@@ -507,11 +516,11 @@ fun EditExpenseDialog(
                     when {
                         parsed == null || parsed <= 0L -> {
                             haptics.reject()
-                            error = "Nominal tidak valid"
+                            error = context.getString(R.string.invalid_amount)
                         }
                         slug == null -> {
                             haptics.reject()
-                            error = "Pilih kategori"
+                            error = context.getString(R.string.choose_category)
                         }
                         else -> {
                             haptics.confirm()
@@ -520,7 +529,7 @@ fun EditExpenseDialog(
                     }
                 },
             ) {
-                Text("Simpan", fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.save), fontWeight = FontWeight.SemiBold)
             }
         },
         dismissButton = {
@@ -530,7 +539,7 @@ fun EditExpenseDialog(
                     onDismiss()
                 },
             ) {
-                Text("Batal")
+                Text(stringResource(R.string.cancel))
             }
         },
     )
