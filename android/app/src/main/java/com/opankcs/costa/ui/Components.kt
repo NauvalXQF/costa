@@ -174,6 +174,20 @@ fun FoodBudgetCard(food: FoodBudget) {
                     .clip(RoundedCornerShape(3.dp)),
             )
 
+            val remainingToday = (food.allowanceToday - food.spentToday).coerceAtLeast(0L)
+            val isOverToday = food.spentToday > food.allowanceToday
+
+            Text(
+                text = if (isOverToday) {
+                    "Lewat ${formatRupiah(food.spentToday - food.allowanceToday)} dari jatah hari ini"
+                } else {
+                    "Sisa jatah hari ini ${formatRupiah(remainingToday)}"
+                },
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.SemiBold,
+                color = if (isOverToday) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+            )
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
