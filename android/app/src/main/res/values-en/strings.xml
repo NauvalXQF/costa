@@ -81,6 +81,8 @@
     <string name="export_help">This month data (1st to today) is saved to the phone Downloads folder. For other months, open History and pick a month.</string>
     <string name="excel_csv">Excel (CSV)</string>
     <string name="csv_label">CSV</string>
+    <string name="export_csv_action">Export CSV</string>
+    <string name="export_pdf_action">Export PDF</string>
     <string name="export_month_title">Export %1$s</string>
     <string name="export_month_help">PDF or CSV for the month you are viewing.</string>
     <string name="pdf">PDF</string>

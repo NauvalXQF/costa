@@ -81,6 +81,8 @@
     <string name="export_help">Mutasi bulan ini (tanggal 1 sampai hari ini) disimpan ke folder Downloads HP. Untuk bulan lain, buka Riwayat lalu pilih bulan.</string>
     <string name="excel_csv">Excel (CSV)</string>
     <string name="csv_label">CSV</string>
+    <string name="export_csv_action">Export CSV</string>
+    <string name="export_pdf_action">Export PDF</string>
     <string name="export_month_title">Export %1$s</string>
     <string name="export_month_help">PDF atau CSV untuk bulan yang sedang dilihat.</string>
     <string name="pdf">PDF</string>

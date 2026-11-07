@@ -18,6 +18,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -84,6 +86,7 @@ fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
     var period by rememberSaveable { mutableStateOf("week") }
     var pendingDelete by remember { mutableStateOf<Expense?>(null) }
     var editing by remember { mutableStateOf<Expense?>(null) }
+    var showExportMenu by remember { mutableStateOf(false) }
     val currentMonth = YearMonth.now().toString()
     val summary = if (period == "week") state.week else state.historyMonthSummary
 
@@ -163,54 +166,41 @@ fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         ) {
                             Text("›", style = MaterialTheme.typography.titleLarge)
                         }
-                    }
-                }
-            }
-
-            if (period == "month") {
-                item {
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
-                        ) {
-                            Text(
-                                text = stringResource(
-                                    R.string.export_month_title,
-                                    formatMonthLabel(state.historyMonth),
-                                ),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                            Text(
-                                text = stringResource(R.string.export_month_help),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Button(
+                        Box {
+                            TextButton(
+                                onClick = {
+                                    haptics.tick()
+                                    showExportMenu = true
+                                },
+                            ) {
+                                Text("⋮", style = MaterialTheme.typography.titleLarge)
+                            }
+                            DropdownMenu(
+                                expanded = showExportMenu,
+                                onDismissRequest = { showExportMenu = false },
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.export_csv_action)) },
                                     onClick = {
+                                        showExportMenu = false
                                         haptics.confirm()
                                         viewModel.exportData("csv", state.historyMonth)
                                     },
-                                    modifier = Modifier.weight(1f),
-                                ) {
-                                    Text(stringResource(R.string.csv_label))
-                                }
-                                Button(
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.export_pdf_action)) },
                                     onClick = {
+                                        showExportMenu = false
                                         haptics.confirm()
                                         viewModel.exportData("pdf", state.historyMonth)
                                     },
-                                    modifier = Modifier.weight(1f),
-                                ) {
-                                    Text(stringResource(R.string.pdf))
-                                }
+                                )
                             }
                         }
                     }
                 }
             }
+
             if (period == "month" && state.historyMonthLoading) {
                 item {
                     Text(
