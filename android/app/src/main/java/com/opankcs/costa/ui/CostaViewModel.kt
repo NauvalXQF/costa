@@ -583,17 +583,18 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
 
         if (_state.value.loadingMoreHistory || !_state.value.historyHasMore || current.isEmpty()) return
 
-        val oldestDate = current
-            .mapNotNull { parseSpentAt(it.spentAt)?.toLocalDate() }
-            .minOrNull() ?: return
-
-        val to = oldestDate.minusDays(1).toString()
+        val last = current.last()
+        val before = last.spentAt ?: return
 
         viewModelScope.launch {
             _state.update { it.copy(loadingMoreHistory = true, error = null) }
 
             try {
-                val page = repository.expenses(limit = PAGE_SIZE, to = to)
+                val page = repository.expenses(
+                    limit = PAGE_SIZE,
+                    before = before,
+                    beforeId = last.id,
+                )
                 val existingIds = _state.value.expenses.map { it.id }.toSet()
                 val merged = _state.value.expenses + page.filterNot { it.id in existingIds }
 

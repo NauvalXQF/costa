@@ -64,6 +64,8 @@ interface CostaApi {
         @Query("limit") limit: Int = 200,
         @Query("from") from: String? = null,
         @Query("to") to: String? = null,
+        @Query("before") before: String? = null,
+        @Query("before_id") beforeId: Int? = null,
     ): ExpenseListResponse
 
     @POST("api/expenses")

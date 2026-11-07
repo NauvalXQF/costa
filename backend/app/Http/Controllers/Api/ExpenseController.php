@@ -19,7 +19,21 @@ class ExpenseController extends Controller
         $query = Expense::query()
             ->where('user_id', $request->user()->id)
             ->with('category')
-            ->orderByDesc('spent_at');
+            ->orderByDesc('spent_at')
+            ->orderByDesc('id');
+
+        if ($before = $request->query('before')) {
+            $beforeAt = Carbon::parse((string) $before);
+            $beforeId = (int) $request->query('before_id', 0);
+
+            $query->where(function ($query) use ($beforeAt, $beforeId) {
+                $query->where('spent_at', '<', $beforeAt)
+                    ->orWhere(function ($query) use ($beforeAt, $beforeId) {
+                        $query->where('spent_at', $beforeAt)
+                            ->where('id', '<', $beforeId);
+                    });
+            });
+        }
 
         if ($from = $request->query('from')) {
             $query->where('spent_at', '>=', Carbon::parse($from)->startOfDay());
