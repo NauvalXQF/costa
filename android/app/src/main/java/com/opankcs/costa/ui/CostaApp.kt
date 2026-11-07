@@ -37,9 +37,15 @@ import kotlinx.coroutines.delay
 import java.util.Locale
 
 @Composable
-fun CostaApp(viewModel: CostaViewModel) {
+fun CostaApp(viewModel: CostaViewModel, startAtHome: Boolean = false) {
     val state by viewModel.state.collectAsState()
     var tab by rememberSaveable { mutableStateOf(0) }
+
+    LaunchedEffect(startAtHome) {
+        if (startAtHome) {
+            tab = 0
+        }
+    }
     val haptics = rememberCostaHaptics()
     val tagline = stringResource(R.string.app_tagline)
 

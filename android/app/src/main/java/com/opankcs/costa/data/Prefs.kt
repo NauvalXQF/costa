@@ -84,6 +84,17 @@ class Prefs(context: Context) {
             sp.edit().putString("food_warning_state", value).apply()
         }
 
+    fun requestRestart() {
+        sp.edit().putBoolean("restart_requested", true).apply()
+    }
+
+    fun consumeRestartRequest(): Boolean {
+        val requested = sp.getBoolean("restart_requested", false)
+        if (requested) {
+            sp.edit().putBoolean("restart_requested", false).apply()
+        }
+        return requested
+    }
     fun clearSession() {
         sp.edit().remove("token").remove("user_name").remove("user_email").apply()
     }

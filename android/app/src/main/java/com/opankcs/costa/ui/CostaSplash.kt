@@ -133,13 +133,13 @@ fun CostaSplash(onFinished: () -> Unit) {
                         visible = lettersVisible,
                         enter = fadeIn(
                             animationSpec = tween(
-                                durationMillis = 420,
-                                delayMillis = index * 105,
+                                durationMillis = 480,
+                                delayMillis = index * 120,
                             ),
                         ) + expandHorizontally(
                             animationSpec = tween(
-                                durationMillis = 420,
-                                delayMillis = index * 105,
+                                durationMillis = 480,
+                                delayMillis = index * 120,
                                 easing = FastOutSlowInEasing,
                             ),
                             expandFrom = Alignment.Start,
