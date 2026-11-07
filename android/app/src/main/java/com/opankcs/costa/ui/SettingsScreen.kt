@@ -543,7 +543,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
         item {
             Text(
                 text = buildAnnotatedString {
-                    append("powered by ")
+                    append("by ")
                     append("opankcs")
                     withStyle(SpanStyle(color = CostaAmber)) { append(".") }
                     append("com")
