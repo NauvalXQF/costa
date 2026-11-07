@@ -10,14 +10,15 @@ A personal expense tracker made for students: a **Laravel API** and a **native A
 
 ## Features
 
-- **Quick add** expenses with amount shortcuts (`25k`, `25000`), category chips, notes, and backdated entries.
-- **History & statistics** — daily/weekly/monthly summaries, category **donut chart**, and per-category totals.
-- **Budgets** — daily, weekly, monthly, plus a **rolling daily food allowance** where overspending becomes debt and savings become bonus for the next day.
+- **Quick add** expenses with smart amount parsing (`25k`, `12.5k`, `25.000`), one-tap amount chips (10k / 20k / 25k / 50k / 100k), category chips, notes, and backdated entries.
+- **History & statistics** — daily/weekly/monthly summaries, category **donut chart**, per-category totals, and paginated history with a "load more" control.
+- **Budgets** — daily, weekly, monthly, plus a **rolling daily food allowance** where overspending becomes debt and savings become bonus for the next day, with today's remaining allowance shown on the home card.
 - **Multi-user** — each account has isolated expenses, settings, and custom categories; registration is protected by an invite code.
 - **Category management** — create, edit, reorder (drag & drop), hide built-in categories or delete your own.
 - **Exports** — monthly mutation as **CSV** or **PDF**, saved directly to the phone's Downloads folder.
 - **Notifications** — evening reminder when nothing is logged, budget warnings (70/80/100%), weekly recap, and a monthly budget reset reminder.
-- **In-app updates** — the app checks the server for a newer APK and installs it without leaving the app.
+- **In-app updates** — the app checks the server for a newer APK, shows a changelog dialog, and installs the update without leaving the app.
+- **Haptic feedback** — curated ticks, confirmations and error haptics for primary actions, with a toggle in Settings.
 - **Dark UI** with a graphite + amber theme, pull-to-refresh, and Android 15+ edge-to-edge support.
 
 ## Screenshots
