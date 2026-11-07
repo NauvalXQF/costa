@@ -21,10 +21,13 @@ import com.opankcs.costa.notifications.BudgetAlerts
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.File
 import java.time.LocalDate
+import java.time.YearMonth
+import java.util.Locale
 
 data class CostaUiState(
     val loading: Boolean = true,
@@ -45,6 +48,12 @@ data class CostaUiState(
     val updateDownloading: Boolean = false,
     val historyHasMore: Boolean = false,
     val loadingMoreHistory: Boolean = false,
+    val historyMonth: String = YearMonth.now().toString(),
+    val historyMonthSummary: Summary? = null,
+    val historyMonthExpenses: List<Expense> = emptyList(),
+    val historyMonthLoading: Boolean = false,
+    val historyMonthHasMore: Boolean = false,
+    val historyMonthLoadingMore: Boolean = false,
 )
 
 class CostaViewModel(application: Application) : AndroidViewModel(application) {
@@ -56,6 +65,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
 
     private val prefs = Prefs(application)
     private val repository = CostaRepository(prefs)
+    private var historyMonthJob: Job? = null
 
     private val _state = MutableStateFlow(
         CostaUiState(
@@ -282,6 +292,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                 )
                 _state.update { it.copy(notice = msg(R.string.notice_expense_saved, formatRupiah(amount)), error = null) }
                 refresh(checkBudgetAlerts = true)
+                reloadHistoryMonthIfLoaded()
             } catch (e: Exception) {
                 _state.update { it.copy(error = msg(R.string.error_expense_save)) }
             }
@@ -314,6 +325,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                 )
                 _state.update { it.copy(notice = msg(R.string.notice_expense_updated), error = null) }
                 refresh(checkBudgetAlerts = true)
+                reloadHistoryMonthIfLoaded()
             } catch (e: Exception) {
                 _state.update { it.copy(error = msg(R.string.error_expense_update)) }
             }
@@ -325,6 +337,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
             runCatching { repository.deleteExpense(id) }
             _state.update { it.copy(notice = msg(R.string.notice_expense_deleted)) }
             refresh(checkBudgetAlerts = true)
+            reloadHistoryMonthIfLoaded()
         }
     }
 
@@ -417,10 +430,11 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 val from = LocalDate.now().withDayOfMonth(1).toString()
+                val lang = if (Locale.getDefault().language == "en") "en" else "id"
                 val to = LocalDate.now().toString()
 
                 if (format == "pdf") {
-                    val body = repository.exportPdf(from, to)
+                    val body = repository.exportPdf(from, to, lang)
                     val saved = DownloadSaver.save(
                         getApplication(),
                         "costa-mutasi-$from-$to.pdf",
@@ -434,7 +448,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                         )
                     }
                 } else {
-                    val body = repository.exportCsv(from, to)
+                    val body = repository.exportCsv(from, to, lang)
                     val saved = DownloadSaver.save(
                         getApplication(),
                         "costa-mutasi-$from-$to.csv",
@@ -583,6 +597,109 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                     it.copy(updateDownloading = false, error = msg(R.string.error_update_download))
                 }
             }
+        }
+    }
+
+    fun loadHistoryMonth(month: String, force: Boolean = false) {
+        val currentMonth = YearMonth.now().toString()
+        val safeMonth = if (month > currentMonth) currentMonth else month
+        val current = _state.value
+
+        if (!force && current.historyMonth == safeMonth &&
+            (current.historyMonthSummary != null || current.historyMonthLoading)
+        ) {
+            return
+        }
+
+        historyMonthJob?.cancel()
+        historyMonthJob = viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    historyMonth = safeMonth,
+                    historyMonthLoading = true,
+                    historyMonthSummary = null,
+                    historyMonthExpenses = emptyList(),
+                    historyMonthHasMore = false,
+                    historyMonthLoadingMore = false,
+                    error = null,
+                )
+            }
+
+            try {
+                val yearMonth = YearMonth.parse(safeMonth)
+                val from = yearMonth.atDay(1).toString()
+                val to = yearMonth.atEndOfMonth().toString()
+                val summary = repository.summary("month", safeMonth)
+                val expenses = repository.expenses(limit = PAGE_SIZE, from = from, to = to)
+
+                _state.update {
+                    it.copy(
+                        historyMonthSummary = summary,
+                        historyMonthExpenses = expenses,
+                        historyMonthHasMore = expenses.size >= PAGE_SIZE,
+                        historyMonthLoading = false,
+                    )
+                }
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                _state.update {
+                    it.copy(historyMonthLoading = false, error = msg(R.string.error_history_load))
+                }
+            }
+        }
+    }
+
+    fun moveHistoryMonth(delta: Int) {
+        val current = YearMonth.parse(_state.value.historyMonth)
+        val target = current.plusMonths(delta.toLong())
+        if (target > YearMonth.now()) return
+        loadHistoryMonth(target.toString(), force = true)
+    }
+
+    fun loadMoreHistoryMonth() {
+        val state = _state.value
+        if (state.historyMonthLoadingMore || !state.historyMonthHasMore) return
+
+        val last = state.historyMonthExpenses.lastOrNull() ?: return
+        val before = last.spentAt ?: return
+        val yearMonth = YearMonth.parse(state.historyMonth)
+
+        viewModelScope.launch {
+            _state.update { it.copy(historyMonthLoadingMore = true, error = null) }
+
+            try {
+                val page = repository.expenses(
+                    limit = PAGE_SIZE,
+                    from = yearMonth.atDay(1).toString(),
+                    to = yearMonth.atEndOfMonth().toString(),
+                    before = before,
+                    beforeId = last.id,
+                )
+                val existingIds = _state.value.historyMonthExpenses.map { it.id }.toSet()
+                val merged = _state.value.historyMonthExpenses + page.filterNot { it.id in existingIds }
+
+                _state.update {
+                    it.copy(
+                        historyMonthExpenses = merged,
+                        historyMonthHasMore = page.size >= PAGE_SIZE,
+                        historyMonthLoadingMore = false,
+                    )
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        historyMonthLoadingMore = false,
+                        error = msg(R.string.error_history_load),
+                    )
+                }
+            }
+        }
+    }
+
+    private fun reloadHistoryMonthIfLoaded() {
+        val state = _state.value
+        if (state.historyMonthSummary != null) {
+            loadHistoryMonth(state.historyMonth, force = true)
         }
     }
 

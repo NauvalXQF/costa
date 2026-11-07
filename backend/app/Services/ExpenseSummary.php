@@ -10,10 +10,17 @@ use Illuminate\Support\Carbon;
 
 class ExpenseSummary
 {
-    public static function for(User $user, string $period = 'today'): array
+    public static function for(User $user, string $period = 'today', ?string $month = null): array
     {
         $now = Carbon::now();
         $label = in_array($period, ['week', 'month'], true) ? $period : 'today';
+
+        if ($label === 'month' && $month !== null && preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $month)) {
+            $target = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
+            if ($target->year !== $now->year || $target->month !== $now->month) {
+                return self::historicalMonth($user, $target);
+            }
+        }
         $plan = BudgetPlan::for($user, $now);
 
         $periodStart = Carbon::parse($plan['period_start'])->startOfDay();
@@ -111,6 +118,71 @@ class ExpenseSummary
                 'weekly_budget' => $plan['weekly'],
             ],
             'food_budget' => self::foodBudget($user, $now),
+        ];
+    }
+
+    private static function historicalMonth(User $user, Carbon $target): array
+    {
+        $start = $target->copy()->startOfMonth();
+        $end = $target->copy()->endOfMonth();
+
+        $expenses = Expense::query()
+            ->where('user_id', $user->id)
+            ->with('category')
+            ->whereBetween('spent_at', [$start, $end])
+            ->get();
+
+        $total = (int) $expenses->sum('amount');
+        $count = $expenses->count();
+
+        $byCategory = $expenses
+            ->groupBy('category_id')
+            ->map(function ($group) {
+                $category = $group->first()->category;
+
+                return [
+                    'slug' => $category?->slug,
+                    'name' => $category?->name,
+                    'icon' => $category?->icon,
+                    'color' => $category?->color,
+                    'total' => (int) $group->sum('amount'),
+                    'count' => $group->count(),
+                ];
+            })
+            ->sortByDesc('total')
+            ->values();
+
+        return [
+            'period' => [
+                'label' => 'month',
+                'start' => $start->toIso8601String(),
+                'end' => $end->toIso8601String(),
+                'budget_start' => $start->toDateString(),
+                'budget_end' => $end->toDateString(),
+                'budget_days' => $start->daysInMonth,
+            ],
+            'total' => $total,
+            'count' => $count,
+            'by_category' => $byCategory,
+            'budget' => [
+                'limit' => null,
+                'spent' => $total,
+                'remaining' => null,
+                'percent' => null,
+                'exceeded' => false,
+            ],
+            'month' => [
+                'budget' => null,
+                'spent' => $total,
+                'remaining' => null,
+                'safe_to_spend_per_day' => null,
+                'period_start' => $start->toDateString(),
+                'period_end' => $end->toDateString(),
+                'period_days' => $start->daysInMonth,
+                'daily_budget' => 0,
+                'weekly_budget' => 0,
+            ],
+            'food_budget' => null,
         ];
     }
 

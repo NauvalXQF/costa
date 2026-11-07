@@ -6,6 +6,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.YearMonth
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -134,4 +135,10 @@ fun localDateFromIsoDate(value: String?): LocalDate? = try {
     if (value.isNullOrBlank()) null else LocalDate.parse(value)
 } catch (_: Exception) {
     null
+}
+
+fun formatMonthLabel(value: String): String = try {
+    YearMonth.parse(value).format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault()))
+} catch (_: Exception) {
+    value
 }

@@ -77,13 +77,13 @@ class CostaRepository(private val prefs: Prefs) {
 
     suspend fun deleteExpense(id: Int) = api.deleteExpense(id)
 
-    suspend fun summary(period: String): Summary = api.summary(period)
+    suspend fun summary(period: String, month: String? = null): Summary = api.summary(period, month)
 
     suspend fun settings(): Settings = api.settings().data
 
     suspend fun saveSettings(settings: UpdateSettingsRequest): Settings = api.updateSettings(settings).data
 
-    suspend fun exportCsv(from: String, to: String): ResponseBody = api.exportCsv(from, to)
+    suspend fun exportCsv(from: String, to: String, lang: String): ResponseBody = api.exportCsv(from, to, lang)
 
-    suspend fun exportPdf(from: String, to: String): ResponseBody = api.exportPdf(from, to)
+    suspend fun exportPdf(from: String, to: String, lang: String): ResponseBody = api.exportPdf(from, to, lang)
 }

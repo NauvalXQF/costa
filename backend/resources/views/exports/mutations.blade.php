@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="{{ ($lang ?? 'id') === 'en' ? 'en' : 'id' }}">
 <head>
     <meta charset="utf-8">
-    <title>Mutasi Pengeluaran Costa</title>
+    <title>{{ ($lang ?? 'id') === 'en' ? 'Costa Expense Mutations' : 'Mutasi Pengeluaran Costa' }}</title>
     <style>
         body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #111; }
         h1 { font-size: 18px; margin: 0 0 4px; }
@@ -16,38 +16,45 @@
     </style>
 </head>
 <body>
-    <h1>Mutasi Pengeluaran Costa</h1>
+    @php
+        $isEn = ($lang ?? 'id') === 'en';
+        $locale = $isEn ? 'en' : 'id';
+        $countLabel = $isEn
+            ? $expenses->count() . ' ' . ($expenses->count() === 1 ? 'transaction' : 'transactions')
+            : $expenses->count() . ' transaksi';
+    @endphp
+    <h1>{{ $isEn ? 'Costa Expense Mutations' : 'Mutasi Pengeluaran Costa' }}</h1>
     <div class="meta">
-        {{ $user->name }} &middot; {{ $from->format('d M Y') }} &mdash; {{ $to->format('d M Y') }} &middot;
-        {{ $expenses->count() }} transaksi
+        {{ $user->name }} &middot; {{ $from->locale($locale)->translatedFormat('d M Y') }} &mdash; {{ $to->locale($locale)->translatedFormat('d M Y') }} &middot;
+        {{ $countLabel }}
     </div>
     <table>
         <thead>
             <tr>
-                <th>Tanggal</th>
-                <th>Kategori</th>
-                <th>Catatan</th>
-                <th class="amount">Nominal</th>
+                <th>{{ $isEn ? 'Date' : 'Tanggal' }}</th>
+                <th>{{ $isEn ? 'Category' : 'Kategori' }}</th>
+                <th>{{ $isEn ? 'Note' : 'Catatan' }}</th>
+                <th class="amount">{{ $isEn ? 'Amount' : 'Nominal' }}</th>
             </tr>
         </thead>
         <tbody>
             @forelse ($expenses as $expense)
                 <tr>
-                    <td>{{ $expense->spent_at->format('d M Y H:i') }}</td>
-                    <td>{{ $expense->category?->name ?? '-' }}</td>
+                    <td>{{ $expense->spent_at->locale($locale)->translatedFormat('d M Y H:i') }}</td>
+                    <td>{{ $categoryNames[$expense->id] ?? ($expense->category?->name ?? '-') }}</td>
                     <td>{{ $expense->note ?? '' }}</td>
-                    <td class="amount">Rp{{ number_format($expense->amount, 0, ',', '.') }}</td>
+                    <td class="amount">Rp{{ $isEn ? number_format($expense->amount, 0, '.', ',') : number_format($expense->amount, 0, ',', '.') }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="4" class="muted">Belum ada pengeluaran pada periode ini.</td>
+                    <td colspan="4" class="muted">{{ $isEn ? 'No expenses in this period.' : 'Belum ada pengeluaran pada periode ini.' }}</td>
                 </tr>
             @endforelse
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="3">Total</td>
-                <td class="amount">Rp{{ number_format($total, 0, ',', '.') }}</td>
+                <td colspan="3">{{ $isEn ? 'Total' : 'Total' }}</td>
+                <td class="amount">Rp{{ $isEn ? number_format($total, 0, '.', ',') : number_format($total, 0, ',', '.') }}</td>
             </tr>
         </tfoot>
     </table>

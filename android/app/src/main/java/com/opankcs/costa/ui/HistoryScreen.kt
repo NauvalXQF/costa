@@ -21,8 +21,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,10 +34,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.opankcs.costa.R
 import com.opankcs.costa.data.Expense
+import java.time.YearMonth
 
 @Composable
 private fun PeriodChip(label: String, selected: Boolean, onClick: () -> Unit) {
@@ -77,14 +81,27 @@ fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
     var period by rememberSaveable { mutableStateOf("week") }
     var pendingDelete by remember { mutableStateOf<Expense?>(null) }
     var editing by remember { mutableStateOf<Expense?>(null) }
-    val summary = if (period == "week") state.week else state.month
+    val currentMonth = YearMonth.now().toString()
+    val summary = if (period == "week") state.week else state.historyMonthSummary
+    val displayedExpenses = if (period == "week") state.expenses else state.historyMonthExpenses
 
-    val grouped: Map<Any, List<Expense>> = state.expenses
+    LaunchedEffect(period) {
+        if (period == "month") {
+            viewModel.loadHistoryMonth(state.historyMonth)
+        }
+    }
+
+    val grouped: Map<Any, List<Expense>> = displayedExpenses
         .groupBy { parseSpentAt(it.spentAt)?.toLocalDate() ?: "Tanpa tanggal" }
 
     PullToRefreshBox(
-        isRefreshing = state.loading,
-        onRefresh = { viewModel.refresh() },
+        isRefreshing = state.loading || (period == "month" && state.historyMonthLoading),
+        onRefresh = {
+            viewModel.refresh()
+            if (period == "month") {
+                viewModel.loadHistoryMonth(state.historyMonth, force = true)
+            }
+        },
         modifier = Modifier.fillMaxSize(),
     ) {
         LazyColumn(
@@ -99,28 +116,75 @@ fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
                 }
             }
 
-            item {
-                SummaryCard(
-                    title = if (period == "week") stringResource(R.string.this_week) else stringResource(R.string.this_month),
-                    summary = summary,
-                )
-            }
-
-            item {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
+            if (period == "month") {
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        TextButton(
+                            onClick = {
+                                haptics.tick()
+                                viewModel.moveHistoryMonth(-1)
+                            },
+                        ) {
+                            Text("‹", style = MaterialTheme.typography.titleLarge)
+                        }
                         Text(
-                            text = stringResource(R.string.category_distribution),
+                            text = formatMonthLabel(state.historyMonth),
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                         )
-                        CategoryDonutChart(
-                            items = summary?.byCategory ?: emptyList(),
-                            total = summary?.total ?: 0L,
-                        )
+                        TextButton(
+                            onClick = {
+                                haptics.tick()
+                                viewModel.moveHistoryMonth(1)
+                            },
+                            enabled = state.historyMonth < currentMonth,
+                        ) {
+                            Text("›", style = MaterialTheme.typography.titleLarge)
+                        }
+                    }
+                }
+            }
+
+            if (period == "month" && state.historyMonthLoading) {
+                item {
+                    Text(
+                        text = stringResource(R.string.loading),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else {
+                item {
+                    SummaryCard(
+                        title = if (period == "week") {
+                            stringResource(R.string.this_week)
+                        } else {
+                            formatMonthLabel(state.historyMonth)
+                        },
+                        summary = summary,
+                    )
+                }
+
+                item {
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.category_distribution),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            CategoryDonutChart(
+                                items = summary?.byCategory ?: emptyList(),
+                                total = summary?.total ?: 0L,
+                            )
+                        }
                     }
                 }
             }
@@ -133,7 +197,7 @@ fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
                 )
             }
 
-            if (state.expenses.isEmpty()) {
+            if (displayedExpenses.isEmpty() && !(period == "month" && state.historyMonthLoading)) {
                 item {
                     Text(
                         text = stringResource(R.string.no_history),
@@ -161,18 +225,29 @@ fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
                 }
             }
 
-            if (state.historyHasMore) {
+            val hasMore = if (period == "week") state.historyHasMore else state.historyMonthHasMore
+            val loadingMore = if (period == "week") {
+                state.loadingMoreHistory
+            } else {
+                state.historyMonthLoadingMore
+            }
+
+            if (hasMore) {
                 item {
                     Button(
                         onClick = {
                             haptics.tick()
-                            viewModel.loadMoreHistory()
+                            if (period == "week") {
+                                viewModel.loadMoreHistory()
+                            } else {
+                                viewModel.loadMoreHistoryMonth()
+                            }
                         },
-                        enabled = !state.loadingMoreHistory,
+                        enabled = !loadingMore,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(
-                            if (state.loadingMoreHistory) {
+                            if (loadingMore) {
                                 stringResource(R.string.loading)
                             } else {
                                 stringResource(R.string.load_more)

@@ -81,7 +81,10 @@ interface CostaApi {
     suspend fun deleteExpense(@Path("id") id: Int)
 
     @GET("api/summary")
-    suspend fun summary(@Query("period") period: String = "today"): Summary
+    suspend fun summary(
+        @Query("period") period: String = "today",
+        @Query("month") month: String? = null,
+    ): Summary
 
     @GET("api/settings")
     suspend fun settings(): SettingsResponse
@@ -94,6 +97,7 @@ interface CostaApi {
     suspend fun exportCsv(
         @Query("from") from: String,
         @Query("to") to: String,
+        @Query("lang") lang: String = "id",
     ): ResponseBody
 
     @Streaming
@@ -101,5 +105,6 @@ interface CostaApi {
     suspend fun exportPdf(
         @Query("from") from: String,
         @Query("to") to: String,
+        @Query("lang") lang: String = "id",
     ): ResponseBody
 }
