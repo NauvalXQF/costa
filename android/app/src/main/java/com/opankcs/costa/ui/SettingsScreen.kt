@@ -375,8 +375,8 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         fontWeight = FontWeight.SemiBold,
                     )
                     NotificationRow(
-                        title = "Pengingat malam",
-                        subtitle = "21:00 — hanya muncul kalau belum ada catatan hari ini",
+                        title = "Pengingat harian",
+                        subtitle = "09:00, 12:00, 21:00 — hanya muncul kalau belum ada catatan hari ini",
                         checked = reminderEnabled,
                         onCheckedChange = {
                             haptics.toggle()
@@ -386,7 +386,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                     )
                     NotificationRow(
                         title = "Peringatan budget",
-                        subtitle = "Saat budget harian/bulanan 80% dan 100%",
+                        subtitle = "Langsung saat budget harian/bulanan 80% atau 100% (sekali per hari/bulan)",
                         checked = budgetEnabled,
                         onCheckedChange = {
                             haptics.toggle()

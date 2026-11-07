@@ -16,6 +16,7 @@ object NotificationScheduler {
     private const val DAILY_WORK = "costa_daily_check"
     private const val WEEKLY_WORK = "costa_weekly_recap"
     private const val MONTHLY_WORK = "costa_monthly_reset"
+    private val reminderHours = listOf(9, 12, 21)
 
     fun schedule(context: Context) {
         CostaNotifications.ensureChannels(context.applicationContext)
@@ -25,7 +26,7 @@ object NotificationScheduler {
     }
 
     fun scheduleDailyNext(context: Context) {
-        val delay = nextDelay(21, 0)
+        val delay = nextReminderDelay()
         val request = OneTimeWorkRequestBuilder<DailyCheckWorker>()
             .setInitialDelay(delay, TimeUnit.MILLISECONDS)
             .setConstraints(networkConstraints())
@@ -61,13 +62,18 @@ object NotificationScheduler {
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
 
-    private fun nextDelay(hour: Int, minute: Int): Long {
+    private fun nextReminderDelay(): Long {
         val now = LocalDateTime.now()
-        var target = now.withHour(hour).withMinute(minute).withSecond(0).withNano(0)
-        if (!target.isAfter(now)) {
-            target = target.plusDays(1)
+
+        for (hour in reminderHours) {
+            val target = now.withHour(hour).withMinute(0).withSecond(0).withNano(0)
+            if (target.isAfter(now)) {
+                return Duration.between(now, target).toMillis()
+            }
         }
-        return Duration.between(now, target).toMillis()
+
+        val tomorrow = now.toLocalDate().plusDays(1).atTime(9, 0)
+        return Duration.between(now, tomorrow).toMillis()
     }
 
     private fun nextWeeklyDelay(day: DayOfWeek, hour: Int, minute: Int): Long {

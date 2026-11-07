@@ -16,7 +16,7 @@ A personal expense tracker made for students: a **Laravel API** and a **native A
 - **Multi-user** — each account has isolated expenses, settings, and custom categories; registration is protected by an invite code.
 - **Category management** — create, edit, reorder (drag & drop), hide built-in categories or delete your own.
 - **Exports** — monthly mutation as **CSV** or **PDF**, saved directly to the phone's Downloads folder.
-- **Notifications** — evening reminder when nothing is logged, budget warnings (70/80/100%), weekly recap, and a monthly budget reset reminder.
+- **Notifications** — reminders at 09:00, 12:00, and 21:00 when nothing is logged yet, real-time budget warnings at 80%/100% (once per day for daily and once per month for monthly), a food-allowance warning, weekly recap, and a monthly budget reset reminder.
 - **In-app updates** — the app checks the server for a newer APK, shows a changelog dialog, and installs the update without leaving the app.
 - **Haptic feedback** — curated ticks, confirmations and error haptics for primary actions, with a toggle in Settings.
 - **Dark UI** with a graphite + amber theme, pull-to-refresh, and Android 15+ edge-to-edge support.

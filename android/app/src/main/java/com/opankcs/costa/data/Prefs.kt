@@ -72,6 +72,12 @@ class Prefs(context: Context) {
             sp.edit().putString("monthly_warning_state", value).apply()
         }
 
+    var foodWarningState: String
+        get() = sp.getString("food_warning_state", "") ?: ""
+        set(value) {
+            sp.edit().putString("food_warning_state", value).apply()
+        }
+
     fun clearSession() {
         sp.edit().remove("token").remove("user_name").remove("user_email").apply()
     }

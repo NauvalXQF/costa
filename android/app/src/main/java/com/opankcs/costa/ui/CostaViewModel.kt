@@ -16,6 +16,7 @@ import com.opankcs.costa.data.Settings
 import com.opankcs.costa.data.Summary
 import com.opankcs.costa.data.UpdateExpenseRequest
 import com.opankcs.costa.data.UpdateSettingsRequest
+import com.opankcs.costa.notifications.BudgetAlerts
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -167,7 +168,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun refresh() {
+    fun refresh(checkBudgetAlerts: Boolean = false) {
         viewModelScope.launch {
             _state.update { it.copy(loading = true, error = null) }
 
@@ -211,6 +212,10 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                         month = month,
                         settings = settings,
                     )
+                }
+
+                if (checkBudgetAlerts) {
+                    BudgetAlerts.check(getApplication(), prefs, today, month)
                 }
             } catch (e: HttpException) {
                 if (e.code() == 401) {
@@ -273,7 +278,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                     spentAt = spentAtIsoFromMillis(dateMillis),
                 )
                 _state.update { it.copy(notice = "Tercatat: ${formatRupiah(amount)}", error = null) }
-                refresh()
+                refresh(checkBudgetAlerts = true)
             } catch (e: Exception) {
                 _state.update { it.copy(error = "Gagal menyimpan pengeluaran") }
             }
@@ -305,7 +310,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                     ),
                 )
                 _state.update { it.copy(notice = "Pengeluaran diperbarui", error = null) }
-                refresh()
+                refresh(checkBudgetAlerts = true)
             } catch (e: Exception) {
                 _state.update { it.copy(error = "Gagal memperbarui pengeluaran") }
             }
@@ -316,7 +321,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             runCatching { repository.deleteExpense(id) }
             _state.update { it.copy(notice = "Pengeluaran dihapus") }
-            refresh()
+            refresh(checkBudgetAlerts = true)
         }
     }
 
