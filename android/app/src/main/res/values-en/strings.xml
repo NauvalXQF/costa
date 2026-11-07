@@ -137,7 +137,7 @@
 
     <string name="category_makan">Food</string>
     <string name="category_bensin">Fuel</string>
-    <string name="category_gojek_grab">Ride-hailing</string>
+    <string name="category_gojek_grab">Gojek/Grab</string>
     <string name="category_listrik">Electricity</string>
     <string name="category_kopi">Coffee</string>
     <string name="category_gym">Gym</string>

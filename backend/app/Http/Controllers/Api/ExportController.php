@@ -13,7 +13,7 @@ class ExportController extends Controller
     private const ENGLISH_CATEGORIES = [
         'makan' => 'Food',
         'bensin' => 'Fuel',
-        'gojek-grab' => 'Ride-hailing',
+        'gojek-grab' => 'Gojek/Grab',
         'listrik' => 'Electricity',
         'kopi' => 'Coffee',
         'gym' => 'Gym',

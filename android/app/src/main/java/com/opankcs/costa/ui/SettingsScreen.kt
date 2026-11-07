@@ -246,40 +246,6 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Text(
-                        text = stringResource(R.string.export_data),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Text(
-                        text = stringResource(R.string.export_help),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(
-                            onClick = { viewModel.exportData("csv") },
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text(stringResource(R.string.excel_csv))
-                        }
-                        Button(
-                            onClick = { viewModel.exportData("pdf") },
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text(stringResource(R.string.pdf))
-                        }
-                    }
-                }
-            }
-        }
-
-        item {
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Text(
