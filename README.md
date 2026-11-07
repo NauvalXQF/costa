@@ -11,7 +11,7 @@ A personal expense tracker made for students: a **Laravel API** and a **native A
 ## Features
 
 - **Quick add** expenses with smart amount parsing (`25k`, `12.5k`, `25.000`), one-tap amount chips (10k / 20k / 25k / 50k / 100k), category chips, notes, and backdated entries.
-- **History & statistics** — daily/weekly/monthly summaries, category **donut chart**, per-category totals, month-by-month navigation (‹ ›) for older months, and paginated history with a "load more" control.
+- **History & statistics** — daily/weekly/monthly summaries, category **donut chart**, per-category totals, month-by-month navigation (‹ ›) for older months, a week view filtered to the current Monday–Sunday range, and paginated history with a "load more" control.
 - **Budgets by period** — set the monthly budget and its start date; the daily threshold is derived from the remaining days and the weekly threshold is prorated by the number of days in each calendar week. A **rolling daily food allowance** still runs separately: overspending becomes debt, savings become bonus for the next day, with today's remaining allowance on the home card.
 - **Multi-user** — each account has isolated expenses, settings, and custom categories; registration is protected by an invite code.
 - **Category management** — create, edit, reorder (drag & drop), hide built-in categories or delete your own.

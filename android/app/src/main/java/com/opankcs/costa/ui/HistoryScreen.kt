@@ -39,7 +39,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.opankcs.costa.R
 import com.opankcs.costa.data.Expense
+import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.YearMonth
+import java.time.temporal.TemporalAdjusters
 
 @Composable
 private fun PeriodChip(label: String, selected: Boolean, onClick: () -> Unit) {
@@ -83,7 +86,21 @@ fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
     var editing by remember { mutableStateOf<Expense?>(null) }
     val currentMonth = YearMonth.now().toString()
     val summary = if (period == "week") state.week else state.historyMonthSummary
-    val displayedExpenses = if (period == "week") state.expenses else state.historyMonthExpenses
+
+    val weekStart = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+    val weekEnd = weekStart.plusDays(6)
+    val budgetPeriodStart = localDateFromIsoDate(state.settings.periodStart) ?: weekStart
+    val budgetPeriodEnd = localDateFromIsoDate(state.settings.periodEnd) ?: weekEnd
+    val effectiveWeekStart = if (budgetPeriodStart.isAfter(weekStart)) budgetPeriodStart else weekStart
+    val effectiveWeekEnd = if (budgetPeriodEnd.isBefore(weekEnd)) budgetPeriodEnd else weekEnd
+    val weekExpenses = state.expenses.filter { expense ->
+        val date = parseSpentAt(expense.spentAt)?.toLocalDate()
+        date != null &&
+            !date.isBefore(effectiveWeekStart) &&
+            !date.isAfter(effectiveWeekEnd)
+    }
+
+    val displayedExpenses = if (period == "week") weekExpenses else state.historyMonthExpenses
 
     LaunchedEffect(period) {
         if (period == "month") {
@@ -225,7 +242,7 @@ fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
                 }
             }
 
-            val hasMore = if (period == "week") state.historyHasMore else state.historyMonthHasMore
+            val hasMore = if (period == "week") weekExpenses.size >= 200 else state.historyMonthHasMore
             val loadingMore = if (period == "week") {
                 state.loadingMoreHistory
             } else {
