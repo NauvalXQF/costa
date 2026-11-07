@@ -516,7 +516,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    OutlinedButton(
+                    Button(
                         onClick = { haptics.tick(); showLanguageDialog = true },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
