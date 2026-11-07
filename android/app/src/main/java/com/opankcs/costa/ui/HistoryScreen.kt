@@ -37,6 +37,8 @@ import com.opankcs.costa.data.Expense
 
 @Composable
 private fun PeriodChip(label: String, selected: Boolean, onClick: () -> Unit) {
+    val haptics = rememberCostaHaptics()
+
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(50))
@@ -50,7 +52,10 @@ private fun PeriodChip(label: String, selected: Boolean, onClick: () -> Unit) {
                 else MaterialTheme.colorScheme.outline,
                 shape = RoundedCornerShape(50),
             )
-            .clickable(onClick = onClick)
+            .clickable {
+                haptics.tick()
+                onClick()
+            }
             .padding(horizontal = 14.dp, vertical = 8.dp),
     ) {
         Text(
@@ -65,6 +70,8 @@ private fun PeriodChip(label: String, selected: Boolean, onClick: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
+    val haptics = rememberCostaHaptics()
+
     var period by rememberSaveable { mutableStateOf("week") }
     var pendingDelete by remember { mutableStateOf<Expense?>(null) }
     var editing by remember { mutableStateOf<Expense?>(null) }
@@ -155,7 +162,10 @@ fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
             if (state.historyHasMore) {
                 item {
                     Button(
-                        onClick = { viewModel.loadMoreHistory() },
+                        onClick = {
+                            haptics.tick()
+                            viewModel.loadMoreHistory()
+                        },
                         enabled = !state.loadingMoreHistory,
                         modifier = Modifier.fillMaxWidth(),
                     ) {

@@ -235,6 +235,7 @@ fun CategoryChips(
     onSelect: (String) -> Unit,
 ) {
     val listState = rememberLazyListState()
+    val haptics = rememberCostaHaptics()
 
     LaunchedEffect(selected, categories) {
         val index = categories.indexOfFirst { it.slug == selected }
@@ -262,7 +263,10 @@ fun CategoryChips(
                         else MaterialTheme.colorScheme.outline,
                         shape = RoundedCornerShape(50),
                     )
-                    .clickable { onSelect(category.slug) }
+                    .clickable {
+                        haptics.tick()
+                        onSelect(category.slug)
+                    }
                     .padding(horizontal = 12.dp, vertical = 8.dp),
             ) {
                 Text(
@@ -282,12 +286,17 @@ fun ExpenseRow(
     onClick: (() -> Unit)? = null,
     onDelete: (() -> Unit)? = null,
 ) {
+    val haptics = rememberCostaHaptics()
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surface)
-            .clickable(enabled = onClick != null) { onClick?.invoke() }
+            .clickable(enabled = onClick != null) {
+                haptics.tick()
+                onClick?.invoke()
+            }
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -324,7 +333,10 @@ fun ExpenseRow(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
-                    .clickable(onClick = onDelete)
+                    .clickable {
+                        haptics.tick()
+                        onDelete()
+                    }
                     .padding(horizontal = 10.dp, vertical = 6.dp),
             ) {
                 Text(
@@ -343,6 +355,8 @@ fun DeleteExpenseDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
 ) {
+    val haptics = rememberCostaHaptics()
+
     val description = buildString {
         append(expense.category?.icon ?: "")
         append(" ")
@@ -361,7 +375,12 @@ fun DeleteExpenseDialog(
         title = { Text("Hapus pengeluaran?") },
         text = { Text(description) },
         confirmButton = {
-            TextButton(onClick = onConfirm) {
+            TextButton(
+                onClick = {
+                    haptics.confirm()
+                    onConfirm()
+                },
+            ) {
                 Text(
                     text = "Hapus",
                     color = MaterialTheme.colorScheme.error,
@@ -370,7 +389,12 @@ fun DeleteExpenseDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = {
+                    haptics.tick()
+                    onDismiss()
+                },
+            ) {
                 Text("Batal")
             }
         },
@@ -384,6 +408,7 @@ fun CostaDatePickerDialog(
     onDismiss: () -> Unit,
     onSelected: (Long) -> Unit,
 ) {
+    val haptics = rememberCostaHaptics()
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = initialMillis ?: System.currentTimeMillis(),
     )
@@ -393,6 +418,7 @@ fun CostaDatePickerDialog(
         confirmButton = {
             TextButton(
                 onClick = {
+                    haptics.confirm()
                     datePickerState.selectedDateMillis?.let(onSelected)
                     onDismiss()
                 },
@@ -401,7 +427,12 @@ fun CostaDatePickerDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = {
+                    haptics.tick()
+                    onDismiss()
+                },
+            ) {
                 Text("Batal")
             }
         },
@@ -417,6 +448,8 @@ fun EditExpenseDialog(
     onDismiss: () -> Unit,
     onSave: (amountText: String, categorySlug: String, note: String, dateMillis: Long?) -> Unit,
 ) {
+    val haptics = rememberCostaHaptics()
+
     var amount by remember { mutableStateOf(expense.amount.toString()) }
     var note by remember { mutableStateOf(expense.note ?: "") }
     var selectedCategory by remember { mutableStateOf(expense.category?.slug) }
@@ -472,9 +505,18 @@ fun EditExpenseDialog(
                     val parsed = parseAmount(amount)
                     val slug = selectedCategory
                     when {
-                        parsed == null || parsed <= 0L -> error = "Nominal tidak valid"
-                        slug == null -> error = "Pilih kategori"
-                        else -> onSave(amount, slug, note, dateMillis)
+                        parsed == null || parsed <= 0L -> {
+                            haptics.reject()
+                            error = "Nominal tidak valid"
+                        }
+                        slug == null -> {
+                            haptics.reject()
+                            error = "Pilih kategori"
+                        }
+                        else -> {
+                            haptics.confirm()
+                            onSave(amount, slug, note, dateMillis)
+                        }
                     }
                 },
             ) {
@@ -482,7 +524,12 @@ fun EditExpenseDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = {
+                    haptics.tick()
+                    onDismiss()
+                },
+            ) {
                 Text("Batal")
             }
         },

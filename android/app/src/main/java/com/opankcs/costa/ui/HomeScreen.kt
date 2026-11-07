@@ -33,8 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -43,7 +41,7 @@ import com.opankcs.costa.data.Expense
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(state: CostaUiState, viewModel: CostaViewModel) {
-    val haptic = LocalHapticFeedback.current
+    val haptics = rememberCostaHaptics()
 
     var amount by rememberSaveable { mutableStateOf("") }
     var note by rememberSaveable { mutableStateOf("") }
@@ -110,7 +108,7 @@ fun HomeScreen(state: CostaUiState, viewModel: CostaViewModel) {
                                             shape = RoundedCornerShape(8.dp),
                                         )
                                         .clickable {
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            haptics.tick()
                                             amount = preset.toString()
                                         }
                                         .padding(vertical = 8.dp),
@@ -138,7 +136,7 @@ fun HomeScreen(state: CostaUiState, viewModel: CostaViewModel) {
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             Spacer(Modifier.weight(1f))
-                            TextButton(onClick = { showDatePicker = true }) {
+                            TextButton(onClick = { haptics.tick(); showDatePicker = true }) {
                                 Text(
                                     if (selectedDateMillis == 0L) {
                                         "Hari ini"
@@ -158,7 +156,7 @@ fun HomeScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         Button(
                             onClick = {
                                 val slug = selectedCategory ?: return@Button
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                haptics.confirm()
                                 viewModel.addExpense(
                                     amountText = amount,
                                     categorySlug = slug,

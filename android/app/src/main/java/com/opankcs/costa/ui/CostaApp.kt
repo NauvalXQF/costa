@@ -1,5 +1,7 @@
 package com.opankcs.costa.ui
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,21 +37,32 @@ import kotlinx.coroutines.delay
 fun CostaApp(viewModel: CostaViewModel) {
     val state by viewModel.state.collectAsState()
     var tab by rememberSaveable { mutableStateOf(0) }
+    val haptics = rememberCostaHaptics()
+
+    LaunchedEffect(state.error) {
+        if (state.error != null) {
+            haptics.reject()
+        }
+    }
 
     state.availableUpdate?.let { update ->
         AlertDialog(
             onDismissRequest = viewModel::dismissUpdate,
             title = { Text("Update tersedia") },
             text = {
-                Text(
-                    buildString {
-                        append("Versi ${update.versionName} sudah tersedia.")
-                        if (update.notes.isNotBlank()) {
-                            append("\n\n")
-                            append(update.notes)
-                        }
-                    },
-                )
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                ) {
+                    Text(
+                        buildString {
+                            append("Versi ${update.versionName} sudah tersedia.")
+                            if (update.notes.isNotBlank()) {
+                                append("\n\n")
+                                append(update.notes)
+                            }
+                        },
+                    )
+                }
             },
             confirmButton = {
                 TextButton(
@@ -120,7 +133,7 @@ fun CostaApp(viewModel: CostaViewModel) {
                             strokeWidth = 2.dp,
                         )
                     } else {
-                        TextButton(onClick = viewModel::refresh) {
+                        TextButton(onClick = { haptics.tick(); viewModel.refresh() }) {
                             Text("Muat ulang")
                         }
                     }
@@ -155,19 +168,19 @@ fun CostaApp(viewModel: CostaViewModel) {
                 NavigationBar {
                     NavigationBarItem(
                         selected = tab == 0,
-                        onClick = { tab = 0 },
+                        onClick = { haptics.tick(); tab = 0 },
                         icon = { Text("🏠") },
                         label = { Text("Beranda") },
                     )
                     NavigationBarItem(
                         selected = tab == 1,
-                        onClick = { tab = 1 },
+                        onClick = { haptics.tick(); tab = 1 },
                         icon = { Text("📊") },
                         label = { Text("Riwayat") },
                     )
                     NavigationBarItem(
                         selected = tab == 2,
-                        onClick = { tab = 2 },
+                        onClick = { haptics.tick(); tab = 2 },
                         icon = { Text("⚙️") },
                         label = { Text("Atur") },
                     )

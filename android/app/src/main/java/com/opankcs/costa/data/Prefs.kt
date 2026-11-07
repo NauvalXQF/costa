@@ -54,6 +54,12 @@ class Prefs(context: Context) {
             sp.edit().putBoolean("notify_monthly_reset", value).apply()
         }
 
+    var hapticsEnabled: Boolean
+        get() = sp.getBoolean("haptics_enabled", true)
+        set(value) {
+            sp.edit().putBoolean("haptics_enabled", value).apply()
+        }
+
     var dailyWarningState: String
         get() = sp.getString("daily_warning_state", "") ?: ""
         set(value) {

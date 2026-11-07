@@ -43,6 +43,7 @@ import com.opankcs.costa.notifications.CostaNotifications
 fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
     val context = LocalContext.current
     val prefs = remember { Prefs(context) }
+    val haptics = rememberCostaHaptics()
 
     var baseUrl by rememberSaveable(state.baseUrl) { mutableStateOf(state.baseUrl) }
 
@@ -79,6 +80,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
     var budgetEnabled by remember { mutableStateOf(prefs.notifyBudget) }
     var weeklyEnabled by remember { mutableStateOf(prefs.notifyWeeklyRecap) }
     var monthlyEnabled by remember { mutableStateOf(prefs.notifyMonthlyReset) }
+    var hapticsEnabled by remember { mutableStateOf(prefs.hapticsEnabled) }
 
     LaunchedEffect(state.notice) {
         if (state.notice == "Password diperbarui") {
@@ -123,7 +125,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         Text("Ubah nama")
                     }
                     OutlinedButton(
-                        onClick = viewModel::logout,
+                        onClick = { haptics.tick(); viewModel.logout() },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text("Keluar", color = MaterialTheme.colorScheme.error)
@@ -148,7 +150,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                             fontWeight = FontWeight.SemiBold,
                         )
                         Spacer(Modifier.weight(1f))
-                        TextButton(onClick = { showAddCategory = true }) {
+                        TextButton(onClick = { haptics.tick(); showAddCategory = true }) {
                             Text("+ Tambah")
                         }
                     }
@@ -158,13 +160,13 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Button(
-                        onClick = { showOrderDialog = true },
+                        onClick = { haptics.tick(); showOrderDialog = true },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text("Atur urutan (drag & drop)")
                     }
                     if (state.hiddenCategories.isNotEmpty()) {
-                        TextButton(onClick = { viewModel.restoreCategories() }) {
+                        TextButton(onClick = { haptics.tick(); viewModel.restoreCategories() }) {
                             Text("Pulihkan ${state.hiddenCategories.size} kategori bawaan")
                         }
                     }
@@ -196,7 +198,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                                 text = "✕",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier
-                                    .clickable { viewModel.deleteCategory(category.id) }
+                                    .clickable { haptics.tick(); viewModel.deleteCategory(category.id) }
                                     .padding(horizontal = 6.dp, vertical = 4.dp),
                             )
                         }
@@ -258,7 +260,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Button(
-                        onClick = { viewModel.saveBaseUrl(baseUrl) },
+                        onClick = { haptics.confirm(); viewModel.saveBaseUrl(baseUrl) },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text("Simpan server")
@@ -316,7 +318,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Button(
-                        onClick = { viewModel.saveBudgets(daily, weekly, monthly, food) },
+                        onClick = { haptics.confirm(); viewModel.saveBudgets(daily, weekly, monthly, food) },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text("Simpan budget")
@@ -341,6 +343,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         subtitle = "21:00 — hanya muncul kalau belum ada catatan hari ini",
                         checked = reminderEnabled,
                         onCheckedChange = {
+                            haptics.toggle()
                             reminderEnabled = it
                             prefs.notifyDailyReminder = it
                         },
@@ -350,6 +353,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         subtitle = "Saat budget harian/bulanan 80% dan 100%",
                         checked = budgetEnabled,
                         onCheckedChange = {
+                            haptics.toggle()
                             budgetEnabled = it
                             prefs.notifyBudget = it
                         },
@@ -359,6 +363,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         subtitle = "Minggu 21:30 — total minggu & kategori terbesar",
                         checked = weeklyEnabled,
                         onCheckedChange = {
+                            haptics.toggle()
                             weeklyEnabled = it
                             prefs.notifyWeeklyRecap = it
                         },
@@ -368,6 +373,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         subtitle = "Tanggal 1 pukul 08:00 — saatnya atur budget bulan ini",
                         checked = monthlyEnabled,
                         onCheckedChange = {
+                            haptics.toggle()
                             monthlyEnabled = it
                             prefs.notifyMonthlyReset = it
                         },
@@ -396,6 +402,31 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
+                        text = "Umpan balik",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    NotificationRow(
+                        title = "Getaran (haptic)",
+                        subtitle = "Getar halus saat menekan tombol penting",
+                        checked = hapticsEnabled,
+                        onCheckedChange = {
+                            haptics.toggle()
+                            hapticsEnabled = it
+                            prefs.hapticsEnabled = it
+                        },
+                    )
+                }
+            }
+        }
+
+        item {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
                         text = "Update aplikasi",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
@@ -406,7 +437,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Button(
-                        onClick = { viewModel.checkForUpdate() },
+                        onClick = { haptics.tick(); viewModel.checkForUpdate() },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text("Cek update")
@@ -418,7 +449,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                             color = MaterialTheme.colorScheme.secondary,
                         )
                         Button(
-                            onClick = { viewModel.downloadAndInstallUpdate() },
+                            onClick = { haptics.confirm(); viewModel.downloadAndInstallUpdate() },
                             enabled = !state.updateDownloading,
                             modifier = Modifier.fillMaxWidth(),
                         ) {
@@ -471,7 +502,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Button(
-                        onClick = { viewModel.changePassword(currentPassword, newPassword, confirmPassword) },
+                        onClick = { haptics.confirm(); viewModel.changePassword(currentPassword, newPassword, confirmPassword) },
                         enabled = currentPassword.isNotBlank() && newPassword.isNotBlank() && confirmPassword.isNotBlank(),
                         modifier = Modifier.fillMaxWidth(),
                     ) {
@@ -506,6 +537,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
             confirmButton = {
                 TextButton(
                     onClick = {
+                        haptics.confirm()
                         viewModel.updateName(nameInput)
                         showNameDialog = false
                     },
@@ -546,6 +578,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
             confirmButton = {
                 TextButton(
                     onClick = {
+                        haptics.confirm()
                         viewModel.addCategory(newCategoryName, newCategoryIcon)
                         newCategoryName = ""
                         newCategoryIcon = ""
@@ -599,6 +632,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
             confirmButton = {
                 TextButton(
                     onClick = {
+                        haptics.confirm()
                         viewModel.updateCategory(category.id, editCategoryName, editCategoryIcon)
                         editingCategory = null
                     },

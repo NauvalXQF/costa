@@ -46,6 +46,7 @@ fun CategoryOrderDialog(
 ) {
     var ordered by remember { mutableStateOf(categories) }
     val listState = rememberLazyListState()
+    val haptics = rememberCostaHaptics()
 
     val reorderableState = rememberReorderableLazyListState(listState) { from, to ->
         ordered = ordered.toMutableList().apply {
@@ -127,11 +128,21 @@ fun CategoryOrderDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
                 ) {
-                    TextButton(onClick = onDismiss) {
+                    TextButton(
+                        onClick = {
+                            haptics.tick()
+                            onDismiss()
+                        },
+                    ) {
                         Text("Batal")
                     }
                     Spacer(Modifier.width(8.dp))
-                    Button(onClick = { onSave(ordered) }) {
+                    Button(
+                        onClick = {
+                            haptics.confirm()
+                            onSave(ordered)
+                        },
+                    ) {
                         Text("Simpan urutan")
                     }
                 }

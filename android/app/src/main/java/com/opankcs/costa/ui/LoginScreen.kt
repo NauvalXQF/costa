@@ -44,6 +44,8 @@ fun LoginScreen(
     var baseUrl by rememberSaveable(state.baseUrl) { mutableStateOf(state.baseUrl) }
     var showServer by rememberSaveable { mutableStateOf(false) }
 
+    val haptics = rememberCostaHaptics()
+
     val isRegister = mode == "register"
 
     Column(
@@ -131,7 +133,7 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
         } else {
-            TextButton(onClick = { showServer = true }) {
+            TextButton(onClick = { haptics.tick(); showServer = true }) {
                 Text("Ubah server")
             }
         }
@@ -140,6 +142,7 @@ fun LoginScreen(
 
         Button(
             onClick = {
+                haptics.confirm()
                 if (isRegister) {
                     onRegister(name, email, password, confirmation, inviteCode, baseUrl)
                 } else {
@@ -175,6 +178,7 @@ fun LoginScreen(
 
         TextButton(
             onClick = {
+                haptics.tick()
                 mode = if (isRegister) "login" else "register"
             },
             modifier = Modifier.fillMaxWidth(),
