@@ -33,7 +33,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -44,6 +48,7 @@ import java.time.temporal.TemporalAdjusters
 import com.opankcs.costa.BuildConfig
 import com.opankcs.costa.R
 import com.opankcs.costa.data.Category
+import com.opankcs.costa.ui.theme.CostaAmber
 import com.opankcs.costa.data.Prefs
 import com.opankcs.costa.notifications.CostaNotifications
 
@@ -532,6 +537,23 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                 text = stringResource(R.string.data_note),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
+        item {
+            Text(
+                text = buildAnnotatedString {
+                    append("powered by ")
+                    append("opankcs")
+                    withStyle(SpanStyle(color = CostaAmber)) { append(".") }
+                    append("com")
+                },
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f),
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 2.dp, bottom = 20.dp),
             )
         }
 
