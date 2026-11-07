@@ -12,7 +12,7 @@ A personal expense tracker made for students: a **Laravel API** and a **native A
 
 - **Quick add** expenses with smart amount parsing (`25k`, `12.5k`, `25.000`), one-tap amount chips (10k / 20k / 25k / 50k / 100k), category chips, notes, and backdated entries.
 - **History & statistics** — daily/weekly/monthly summaries, category **donut chart**, per-category totals, and paginated history with a "load more" control.
-- **Budgets** — daily, weekly, monthly, plus a **rolling daily food allowance** where overspending becomes debt and savings become bonus for the next day, with today's remaining allowance shown on the home card.
+- **Budgets by period** — set the monthly budget and its start date; the daily threshold is derived from the remaining days and the weekly threshold is prorated by the number of days in each calendar week. A **rolling daily food allowance** still runs separately: overspending becomes debt, savings become bonus for the next day, with today's remaining allowance on the home card.
 - **Multi-user** — each account has isolated expenses, settings, and custom categories; registration is protected by an invite code.
 - **Category management** — create, edit, reorder (drag & drop), hide built-in categories or delete your own.
 - **Exports** — monthly mutation as **CSV** or **PDF**, saved directly to the phone's Downloads folder.
@@ -51,7 +51,7 @@ backend/   Laravel API (Sanctum tokens, SQLite, DomPDF, CSV export)
 | `GET` | `/api/summary?period=today\|week\|month` | Totals, budgets, food allowance |
 | `GET/POST/PATCH/DELETE` | `/api/expenses` | Expense CRUD |
 | `GET/POST/PUT/DELETE` | `/api/categories` | Category CRUD, ordering, hiding |
-| `GET/PUT` | `/api/settings` | Budget settings |
+| `GET/PUT` | `/api/settings` | Budget period, monthly budget, food allowance |
 | `GET` | `/api/export/csv`, `/api/export/pdf` | Monthly mutation export |
 | `GET` | `/api/app-version` | Latest APK metadata for in-app updates |
 
