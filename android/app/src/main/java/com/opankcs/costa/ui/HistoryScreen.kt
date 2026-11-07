@@ -167,6 +167,50 @@ fun HistoryScreen(state: CostaUiState, viewModel: CostaViewModel) {
                 }
             }
 
+            if (period == "month") {
+                item {
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            Text(
+                                text = stringResource(
+                                    R.string.export_month_title,
+                                    formatMonthLabel(state.historyMonth),
+                                ),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Text(
+                                text = stringResource(R.string.export_month_help),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Button(
+                                    onClick = {
+                                        haptics.confirm()
+                                        viewModel.exportData("csv", state.historyMonth)
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Text(stringResource(R.string.csv_label))
+                                }
+                                Button(
+                                    onClick = {
+                                        haptics.confirm()
+                                        viewModel.exportData("pdf", state.historyMonth)
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Text(stringResource(R.string.pdf))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             if (period == "month" && state.historyMonthLoading) {
                 item {
                     Text(

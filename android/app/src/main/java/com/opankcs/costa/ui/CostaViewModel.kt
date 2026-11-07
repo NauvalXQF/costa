@@ -426,12 +426,15 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun exportData(format: String) {
+    fun exportData(format: String, month: String? = null) {
         viewModelScope.launch {
             try {
-                val from = LocalDate.now().withDayOfMonth(1).toString()
+val yearMonth = month?.let { runCatching { YearMonth.parse(it) }.getOrNull() }
+                val from = yearMonth?.atDay(1)?.toString()
+                    ?: LocalDate.now().withDayOfMonth(1).toString()
+                val to = yearMonth?.atEndOfMonth()?.toString()
+                    ?: LocalDate.now().toString()
                 val lang = if (Locale.getDefault().language == "en") "en" else "id"
-                val to = LocalDate.now().toString()
 
                 if (format == "pdf") {
                     val body = repository.exportPdf(from, to, lang)

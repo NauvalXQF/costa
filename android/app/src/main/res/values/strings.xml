@@ -78,8 +78,11 @@
     <string name="reorder_drag">Atur urutan (drag &amp; drop)</string>
     <string name="restore_defaults">Pulihkan %1$d kategori bawaan</string>
     <string name="export_data">Export data</string>
-    <string name="export_help">Mutasi bulan ini (tanggal 1 sampai hari ini) disimpan ke folder Downloads HP.</string>
+    <string name="export_help">Mutasi bulan ini (tanggal 1 sampai hari ini) disimpan ke folder Downloads HP. Untuk bulan lain, buka Riwayat lalu pilih bulan.</string>
     <string name="excel_csv">Excel (CSV)</string>
+    <string name="csv_label">CSV</string>
+    <string name="export_month_title">Export %1$s</string>
+    <string name="export_month_help">PDF atau CSV untuk bulan yang sedang dilihat.</string>
     <string name="pdf">PDF</string>
     <string name="server">Server</string>
     <string name="save_server">Simpan server</string>

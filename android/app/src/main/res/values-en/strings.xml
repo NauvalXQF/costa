@@ -78,8 +78,11 @@
     <string name="reorder_drag">Reorder (drag and drop)</string>
     <string name="restore_defaults">Restore %1$d built-in categories</string>
     <string name="export_data">Export data</string>
-    <string name="export_help">This month data (1st to today) is saved to the phone Downloads folder.</string>
+    <string name="export_help">This month data (1st to today) is saved to the phone Downloads folder. For other months, open History and pick a month.</string>
     <string name="excel_csv">Excel (CSV)</string>
+    <string name="csv_label">CSV</string>
+    <string name="export_month_title">Export %1$s</string>
+    <string name="export_month_help">PDF or CSV for the month you are viewing.</string>
     <string name="pdf">PDF</string>
     <string name="server">Server</string>
     <string name="save_server">Save server</string>
