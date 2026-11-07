@@ -200,7 +200,7 @@ fun HomeScreen(state: CostaUiState, viewModel: CostaViewModel) {
                     )
                 }
             } else {
-                items(state.expenses.take(20), key = { it.id }) { expense ->
+                items(state.expenses.take(5), key = { it.id }) { expense ->
                     ExpenseRow(
                         expense = expense,
                         onClick = { editing = expense },
