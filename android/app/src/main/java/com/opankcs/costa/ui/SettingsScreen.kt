@@ -386,7 +386,7 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                     )
                     NotificationRow(
                         title = "Peringatan budget",
-                        subtitle = "Langsung saat budget harian/bulanan 80% atau 100% (sekali per hari/bulan)",
+                        subtitle = "Langsung saat budget harian/bulanan mencapai ≥80% (sekali per hari/bulan)",
                         checked = budgetEnabled,
                         onCheckedChange = {
                             haptics.toggle()

@@ -58,7 +58,7 @@ object BudgetAlerts {
             val title = if (level >= 100) {
                 "Budget harian terlampaui"
             } else {
-                "Budget harian 80% terpakai"
+                "Budget harian ≥80% terpakai"
             }
             val text = "Hari ini ${formatRupiah(today.total)} dari ${formatRupiah(limit)} " +
                 "(${percent.toInt()}%). Sisa ${formatRupiah(today.budget.remaining)}."
@@ -98,7 +98,7 @@ object BudgetAlerts {
             val title = if (level >= 100) {
                 "Budget bulanan terlampaui"
             } else {
-                "Budget bulanan 80% terpakai"
+                "Budget bulanan ≥80% terpakai"
             }
             val text = "Periode ini ${formatRupiah(month.total)} dari ${formatRupiah(limit)} " +
                 "(${percent.toInt()}%). Sisa aman ${formatRupiah(month.month.safeToSpendPerDay)}/hari."
