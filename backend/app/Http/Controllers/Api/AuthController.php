@@ -20,7 +20,7 @@ class AuthController extends Controller
             'device_name' => ['nullable', 'string', 'max:100'],
         ]);
 
-        $expected = (string) env('COSTA_INVITE_CODE', '');
+        $expected = (string) config('costa.invite_code', '');
 
         if ($expected === '' || ! hash_equals($expected, (string) $data['invite_code'])) {
             throw ValidationException::withMessages([

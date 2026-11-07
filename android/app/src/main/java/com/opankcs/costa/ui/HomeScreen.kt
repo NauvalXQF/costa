@@ -1,6 +1,10 @@
 package com.opankcs.costa.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -27,6 +32,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -35,6 +43,8 @@ import com.opankcs.costa.data.Expense
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(state: CostaUiState, viewModel: CostaViewModel) {
+    val haptic = LocalHapticFeedback.current
+
     var amount by rememberSaveable { mutableStateOf("") }
     var note by rememberSaveable { mutableStateOf("") }
     var selectedCategory by rememberSaveable { mutableStateOf<String?>(null) }
@@ -84,6 +94,35 @@ fun HomeScreen(state: CostaUiState, viewModel: CostaViewModel) {
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                         )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
+                            listOf(10_000L, 20_000L, 25_000L, 50_000L, 100_000L).forEach { preset ->
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(MaterialTheme.colorScheme.surface)
+                                        .border(
+                                            width = 1.dp,
+                                            color = MaterialTheme.colorScheme.outline,
+                                            shape = RoundedCornerShape(8.dp),
+                                        )
+                                        .clickable {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            amount = preset.toString()
+                                        }
+                                        .padding(vertical = 8.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Text(
+                                        text = "${preset / 1000}k",
+                                        style = MaterialTheme.typography.labelMedium,
+                                    )
+                                }
+                            }
+                        }
                         CategoryChips(
                             categories = state.categories,
                             selected = selectedCategory,
@@ -119,6 +158,7 @@ fun HomeScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         Button(
                             onClick = {
                                 val slug = selectedCategory ?: return@Button
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 viewModel.addExpense(
                                     amountText = amount,
                                     categorySlug = slug,

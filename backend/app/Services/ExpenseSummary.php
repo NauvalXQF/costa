@@ -105,7 +105,10 @@ class ExpenseSummary
             return null;
         }
 
-        $category = Category::query()->where('slug', 'makan')->first();
+        $category = Category::query()
+            ->whereNull('user_id')
+            ->where('slug', 'makan')
+            ->first();
 
         if (! $category) {
             return null;
