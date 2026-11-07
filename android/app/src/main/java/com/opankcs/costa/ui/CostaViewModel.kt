@@ -15,6 +15,7 @@ import com.opankcs.costa.data.Prefs
 import com.opankcs.costa.data.Settings
 import com.opankcs.costa.data.Summary
 import com.opankcs.costa.data.UpdateExpenseRequest
+import com.opankcs.costa.data.UpdateSettingsRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -486,15 +487,14 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
         refresh()
     }
 
-    fun saveBudgets(daily: String, weekly: String, monthly: String, food: String = "") {
+    fun saveBudget(monthly: String, food: String, startDateMillis: Long?) {
         viewModelScope.launch {
             try {
                 repository.saveSettings(
-                    Settings(
-                        dailyBudget = daily.toLongOrNull() ?: 0L,
-                        weeklyBudget = weekly.toLongOrNull() ?: 0L,
+                    UpdateSettingsRequest(
                         monthlyBudget = monthly.toLongOrNull() ?: 0L,
                         foodDailyBudget = food.toLongOrNull() ?: 0L,
+                        budgetStartDate = startDateMillis?.let { utcMillisToLocalDate(it).toString() },
                     ),
                 )
                 _state.update { it.copy(notice = "Budget disimpan", error = null) }

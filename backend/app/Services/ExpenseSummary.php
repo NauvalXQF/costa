@@ -14,11 +14,20 @@ class ExpenseSummary
     {
         $now = Carbon::now();
         $label = in_array($period, ['week', 'month'], true) ? $period : 'today';
+        $plan = BudgetPlan::for($user, $now);
+
+        $periodStart = Carbon::parse($plan['period_start'])->startOfDay();
+        $periodEnd = Carbon::parse($plan['period_end'])->endOfDay();
+        $todayStart = $now->copy()->startOfDay();
+        $todayEnd = $now->copy()->endOfDay();
 
         [$start, $end] = match ($label) {
-            'week' => [$now->copy()->startOfWeek(), $now->copy()->endOfWeek()],
-            'month' => [$now->copy()->startOfMonth(), $now->copy()->endOfMonth()],
-            default => [$now->copy()->startOfDay(), $now->copy()->endOfDay()],
+            'week' => [
+                $plan['week_start'] ? Carbon::parse($plan['week_start'])->startOfDay() : $now->copy()->startOfWeek(),
+                $plan['week_end'] ? Carbon::parse($plan['week_end'])->endOfDay() : $now->copy()->endOfWeek(),
+            ],
+            'month' => [$periodStart->copy(), $periodEnd->copy()],
+            default => [$todayStart->copy(), $todayEnd->copy()],
         };
 
         $expenses = Expense::query()
@@ -47,14 +56,10 @@ class ExpenseSummary
             ->sortByDesc('total')
             ->values();
 
-        $daily = (int) Setting::getFor($user->id, 'daily_budget', 0);
-        $weekly = (int) Setting::getFor($user->id, 'weekly_budget', 0);
-        $monthly = (int) Setting::getFor($user->id, 'monthly_budget', 0);
-
         $limit = match ($label) {
-            'week' => $weekly,
-            'month' => $monthly,
-            default => $daily,
+            'week' => $plan['weekly'],
+            'month' => $plan['monthly'],
+            default => $plan['daily'],
         };
 
         $remaining = $limit > 0 ? max($limit - $total, 0) : null;
@@ -62,12 +67,16 @@ class ExpenseSummary
 
         $monthSpent = (int) Expense::query()
             ->where('user_id', $user->id)
-            ->whereBetween('spent_at', [$now->copy()->startOfMonth(), $now->copy()->endOfMonth()])
+            ->whereBetween('spent_at', [$periodStart, $periodEnd])
             ->sum('amount');
 
-        $daysLeft = $now->daysInMonth - $now->day + 1;
-        $monthRemaining = $monthly > 0 ? max($monthly - $monthSpent, 0) : null;
-        $safeToSpendPerDay = ($monthly > 0 && $daysLeft > 0)
+        $daysLeft = 0;
+        if ($now->copy()->startOfDay()->lessThanOrEqualTo($periodEnd)) {
+            $daysLeft = (int) $now->copy()->startOfDay()->diffInDays($periodEnd->copy()->startOfDay()) + 1;
+        }
+
+        $monthRemaining = $plan['monthly'] > 0 ? max($plan['monthly'] - $monthSpent, 0) : null;
+        $safeToSpendPerDay = ($plan['monthly'] > 0 && $daysLeft > 0)
             ? (int) floor($monthRemaining / $daysLeft)
             : null;
 
@@ -76,6 +85,9 @@ class ExpenseSummary
                 'label' => $label,
                 'start' => $start->toIso8601String(),
                 'end' => $end->toIso8601String(),
+                'budget_start' => $plan['period_start'],
+                'budget_end' => $plan['period_end'],
+                'budget_days' => $plan['period_days'],
             ],
             'total' => $total,
             'count' => $count,
@@ -88,10 +100,15 @@ class ExpenseSummary
                 'exceeded' => $limit > 0 && $total > $limit,
             ],
             'month' => [
-                'budget' => $monthly ?: null,
+                'budget' => $plan['monthly'] ?: null,
                 'spent' => $monthSpent,
                 'remaining' => $monthRemaining,
                 'safe_to_spend_per_day' => $safeToSpendPerDay,
+                'period_start' => $plan['period_start'],
+                'period_end' => $plan['period_end'],
+                'period_days' => $plan['period_days'],
+                'daily_budget' => $plan['daily'],
+                'weekly_budget' => $plan['weekly'],
             ],
             'food_budget' => self::foodBudget($user, $now),
         ];

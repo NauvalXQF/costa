@@ -116,3 +116,14 @@ fun dateMillisFromIso(value: String?): Long? {
     val date = parseSpentAt(value)?.toLocalDate() ?: return null
     return localDateToUtcMillis(date)
 }
+fun formatDateShort(date: LocalDate): String =
+    date.format(DateTimeFormatter.ofPattern("d MMM", Locale("id", "ID")))
+
+fun formatDateLong(date: LocalDate): String =
+    date.format(DateTimeFormatter.ofPattern("d MMM yyyy", Locale("id", "ID")))
+
+fun localDateFromIsoDate(value: String?): LocalDate? = try {
+    if (value.isNullOrBlank()) null else LocalDate.parse(value)
+} catch (_: Exception) {
+    null
+}

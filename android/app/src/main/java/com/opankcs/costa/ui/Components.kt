@@ -102,7 +102,7 @@ fun SummaryCard(title: String, summary: Summary?) {
 
             summary?.month?.safeToSpendPerDay?.let { safe ->
                 Text(
-                    text = "Aman belanja ${formatRupiah(safe)}/hari (sisa bulan ini)",
+                    text = "Aman belanja ${formatRupiah(safe)}/hari (sisa periode ini)",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

@@ -81,7 +81,7 @@ class CostaRepository(private val prefs: Prefs) {
 
     suspend fun settings(): Settings = api.settings().data
 
-    suspend fun saveSettings(settings: Settings): Settings = api.updateSettings(settings).data
+    suspend fun saveSettings(settings: UpdateSettingsRequest): Settings = api.updateSettings(settings).data
 
     suspend fun exportCsv(from: String, to: String): ResponseBody = api.exportCsv(from, to)
 

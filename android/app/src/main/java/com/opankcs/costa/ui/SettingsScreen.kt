@@ -34,6 +34,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalAdjusters
 import com.opankcs.costa.BuildConfig
 import com.opankcs.costa.data.Category
 import com.opankcs.costa.data.Prefs
@@ -47,18 +51,36 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
 
     var baseUrl by rememberSaveable(state.baseUrl) { mutableStateOf(state.baseUrl) }
 
-    var daily by rememberSaveable(state.settings.dailyBudget) {
-        mutableStateOf(if (state.settings.dailyBudget > 0) state.settings.dailyBudget.toString() else "")
-    }
-    var weekly by rememberSaveable(state.settings.weeklyBudget) {
-        mutableStateOf(if (state.settings.weeklyBudget > 0) state.settings.weeklyBudget.toString() else "")
-    }
     var monthly by rememberSaveable(state.settings.monthlyBudget) {
         mutableStateOf(if (state.settings.monthlyBudget > 0) state.settings.monthlyBudget.toString() else "")
     }
     var food by rememberSaveable(state.settings.foodDailyBudget) {
         mutableStateOf(if (state.settings.foodDailyBudget > 0) state.settings.foodDailyBudget.toString() else "")
     }
+    var startDateMillis by rememberSaveable(state.settings.periodStart) {
+        mutableStateOf(
+            localDateFromIsoDate(state.settings.periodStart)?.let(::localDateToUtcMillis)
+                ?: localDateToUtcMillis(LocalDate.now()),
+        )
+    }
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    val previewStart = utcMillisToLocalDate(startDateMillis)
+    val previewPeriodEnd = previewStart.withDayOfMonth(previewStart.lengthOfMonth())
+    val previewPeriodDays = ChronoUnit.DAYS.between(previewStart, previewPeriodEnd).toInt() + 1
+    val monthlyValue = monthly.toLongOrNull() ?: 0L
+    val previewDaily = if (monthlyValue > 0) monthlyValue / previewPeriodDays else 0L
+    val todayDate = LocalDate.now()
+    val previewWeekStart = todayDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+    val previewWeekEnd = previewWeekStart.plusDays(6)
+    val previewEffectiveStart = if (previewWeekStart.isAfter(previewStart)) previewWeekStart else previewStart
+    val previewEffectiveEnd = if (previewWeekEnd.isAfter(previewPeriodEnd)) previewPeriodEnd else previewWeekEnd
+    val previewWeekDays = if (!previewEffectiveStart.isAfter(previewEffectiveEnd)) {
+        ChronoUnit.DAYS.between(previewEffectiveStart, previewEffectiveEnd).toInt() + 1
+    } else {
+        0
+    }
+    val previewWeekly = previewDaily * previewWeekDays
 
     var showNameDialog by remember { mutableStateOf(false) }
     var nameInput by remember { mutableStateOf(state.userName) }
@@ -276,25 +298,9 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Text(
-                        text = "Budget",
+                        text = "Budget periode",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
-                    )
-                    OutlinedTextField(
-                        value = daily,
-                        onValueChange = { daily = it },
-                        label = { Text("Budget harian (Rp)") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    OutlinedTextField(
-                        value = weekly,
-                        onValueChange = { weekly = it },
-                        label = { Text("Budget mingguan (Rp)") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
                     )
                     OutlinedTextField(
                         value = monthly,
@@ -304,6 +310,12 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
+                    OutlinedButton(
+                        onClick = { haptics.tick(); showDatePicker = true },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text("Mulai periode: ${formatDateLong(previewStart)}")
+                    }
                     OutlinedTextField(
                         value = food,
                         onValueChange = { food = it },
@@ -317,8 +329,32 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                    if (monthlyValue > 0) {
+                        Text(
+                            text = "Periode ${formatDateShort(previewStart)} - ${formatDateShort(previewPeriodEnd)} (${previewPeriodDays} hari)",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            text = "Harian otomatis: ${formatRupiah(previewDaily)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Text(
+                            text = "Minggu ini (${formatDateShort(previewEffectiveStart)} - ${formatDateShort(previewEffectiveEnd)}): ${formatRupiah(previewWeekly)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    } else {
+                        Text(
+                            text = "Isi budget bulanan untuk menghitung budget harian dan mingguan otomatis.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                     Button(
-                        onClick = { haptics.confirm(); viewModel.saveBudgets(daily, weekly, monthly, food) },
+                        onClick = { haptics.confirm(); viewModel.saveBudget(monthly, food, startDateMillis) },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text("Simpan budget")
@@ -647,6 +683,14 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
             },
         )
     }
+    if (showDatePicker) {
+        CostaDatePickerDialog(
+            initialMillis = startDateMillis,
+            onDismiss = { showDatePicker = false },
+            onSelected = { startDateMillis = it },
+        )
+    }
+
 }
 
 @Composable

@@ -94,6 +94,11 @@ data class MonthStatus(
     val spent: Long = 0,
     val remaining: Long? = null,
     @SerializedName("safe_to_spend_per_day") val safeToSpendPerDay: Long? = null,
+    @SerializedName("period_start") val periodStart: String? = null,
+    @SerializedName("period_end") val periodEnd: String? = null,
+    @SerializedName("period_days") val periodDays: Int = 0,
+    @SerializedName("daily_budget") val dailyBudget: Long = 0,
+    @SerializedName("weekly_budget") val weeklyBudget: Long = 0,
 )
 
 data class FoodBudget(
@@ -123,6 +128,19 @@ data class Settings(
     @SerializedName("weekly_budget") val weeklyBudget: Long = 0,
     @SerializedName("monthly_budget") val monthlyBudget: Long = 0,
     @SerializedName("food_daily_budget") val foodDailyBudget: Long = 0,
+    @SerializedName("budget_start_date") val budgetStartDate: String? = null,
+    @SerializedName("period_start") val periodStart: String? = null,
+    @SerializedName("period_end") val periodEnd: String? = null,
+    @SerializedName("period_days") val periodDays: Int = 0,
+    @SerializedName("week_start") val weekStart: String? = null,
+    @SerializedName("week_end") val weekEnd: String? = null,
+    @SerializedName("week_days") val weekDays: Int = 0,
+)
+
+data class UpdateSettingsRequest(
+    @SerializedName("monthly_budget") val monthlyBudget: Long,
+    @SerializedName("food_daily_budget") val foodDailyBudget: Long,
+    @SerializedName("budget_start_date") val budgetStartDate: String? = null,
 )
 
 data class SettingsResponse(

@@ -87,7 +87,7 @@ interface CostaApi {
     suspend fun settings(): SettingsResponse
 
     @PUT("api/settings")
-    suspend fun updateSettings(@Body body: Settings): SettingsResponse
+    suspend fun updateSettings(@Body body: UpdateSettingsRequest): SettingsResponse
 
     @Streaming
     @GET("api/export/csv")
