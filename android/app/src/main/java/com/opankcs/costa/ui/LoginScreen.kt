@@ -43,8 +43,6 @@ fun LoginScreen(
     var password by rememberSaveable { mutableStateOf("") }
     var confirmation by rememberSaveable { mutableStateOf("") }
     var inviteCode by rememberSaveable { mutableStateOf("") }
-    var baseUrl by rememberSaveable(state.baseUrl) { mutableStateOf(state.baseUrl) }
-    var showServer by rememberSaveable { mutableStateOf(false) }
 
     val haptics = rememberCostaHaptics()
 
@@ -126,19 +124,6 @@ fun LoginScreen(
 
         Spacer(Modifier.height(6.dp))
 
-        if (showServer) {
-            OutlinedTextField(
-                value = baseUrl,
-                onValueChange = { baseUrl = it },
-                label = { Text(stringResource(R.string.server_base_url)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        } else {
-            TextButton(onClick = { haptics.tick(); showServer = true }) {
-                Text(stringResource(R.string.change_server))
-            }
-        }
 
         Spacer(Modifier.height(16.dp))
 
@@ -146,9 +131,9 @@ fun LoginScreen(
             onClick = {
                 haptics.confirm()
                 if (isRegister) {
-                    onRegister(name, email, password, confirmation, inviteCode, baseUrl)
+                    onRegister(name, email, password, confirmation, inviteCode, state.baseUrl)
                 } else {
-                    onLogin(email, password, baseUrl)
+                    onLogin(email, password, state.baseUrl)
                 }
             },
             enabled = email.isNotBlank() &&

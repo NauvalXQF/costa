@@ -62,7 +62,6 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
         else -> stringResource(R.string.language_system)
     }
 
-    var baseUrl by rememberSaveable(state.baseUrl) { mutableStateOf(state.baseUrl) }
 
     var monthly by rememberSaveable(state.settings.monthlyBudget) {
         mutableStateOf(if (state.settings.monthlyBudget > 0) state.settings.monthlyBudget.toString() else "")
@@ -249,34 +248,6 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Text(
-                        text = stringResource(R.string.server),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    OutlinedTextField(
-                        value = baseUrl,
-                        onValueChange = { baseUrl = it },
-                        label = { Text(stringResource(R.string.server_base_url)) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    Button(
-                        onClick = { haptics.confirm(); viewModel.saveBaseUrl(baseUrl) },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(stringResource(R.string.save_server))
-                    }
-                }
-            }
-        }
-
-        item {
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Text(
                         text = stringResource(R.string.budget_period),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
@@ -439,52 +410,6 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Text(
-                        text = stringResource(R.string.app_update),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Text(
-                        text = stringResource(R.string.installed_version, BuildConfig.VERSION_NAME),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Button(
-                        onClick = { haptics.tick(); viewModel.checkForUpdate() },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(stringResource(R.string.check_update))
-                    }
-                    state.availableUpdate?.let { update ->
-                        Text(
-                            text = stringResource(R.string.version_available, update.versionName),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.secondary,
-                        )
-                        Button(
-                            onClick = { haptics.confirm(); viewModel.downloadAndInstallUpdate() },
-                            enabled = !state.updateDownloading,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(
-                                if (state.updateDownloading) {
-                                    "Mengunduh..."
-                                } else {
-                                    "Unduh & pasang"
-                                },
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        item {
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Text(
@@ -560,6 +485,53 @@ fun SettingsScreen(state: CostaUiState, viewModel: CostaViewModel) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+
+        item {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.app_update),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = stringResource(R.string.installed_version, BuildConfig.VERSION_NAME),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Button(
+                        onClick = { haptics.tick(); viewModel.checkForUpdate() },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(R.string.check_update))
+                    }
+                    state.availableUpdate?.let { update ->
+                        Text(
+                            text = stringResource(R.string.version_available, update.versionName),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.secondary,
+                        )
+                        Button(
+                            onClick = { haptics.confirm(); viewModel.downloadAndInstallUpdate() },
+                            enabled = !state.updateDownloading,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                if (state.updateDownloading) {
+                                    stringResource(R.string.downloading)
+                                } else {
+                                    stringResource(R.string.download_install)
+                                },
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     if (showNameDialog) {

@@ -506,12 +506,6 @@ val yearMonth = month?.let { runCatching { YearMonth.parse(it) }.getOrNull() }
         }
     }
 
-    fun saveBaseUrl(baseUrl: String) {
-        prefs.baseUrl = baseUrl
-        _state.update { it.copy(notice = msg(R.string.notice_server_saved), error = null) }
-        refresh()
-    }
-
     fun saveBudget(monthly: String, food: String, startDateMillis: Long?) {
         viewModelScope.launch {
             try {
