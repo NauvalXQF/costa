@@ -13,8 +13,8 @@ android {
         applicationId = "com.opankcs.costa"
         minSdk = 35
         targetSdk = 37
-        versionCode = 27
-        versionName = "1.7.9"
+        versionCode = 28
+        versionName = "1.7.10"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
