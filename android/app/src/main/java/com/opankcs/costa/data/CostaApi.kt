@@ -60,7 +60,11 @@ interface CostaApi {
     suspend fun deleteCategory(@Path("id") id: Int)
 
     @GET("api/expenses")
-    suspend fun expenses(@Query("limit") limit: Int = 100): ExpenseListResponse
+    suspend fun expenses(
+        @Query("limit") limit: Int = 200,
+        @Query("from") from: String? = null,
+        @Query("to") to: String? = null,
+    ): ExpenseListResponse
 
     @POST("api/expenses")
     suspend fun createExpense(@Body body: CreateExpenseRequest): SingleExpenseResponse

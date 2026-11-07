@@ -53,7 +53,8 @@ class CostaRepository(private val prefs: Prefs) {
 
     suspend fun deleteCategory(id: Int) = api.deleteCategory(id)
 
-    suspend fun expenses(): List<Expense> = api.expenses().data
+    suspend fun expenses(limit: Int = 200, from: String? = null, to: String? = null): List<Expense> =
+        api.expenses(limit = limit, from = from, to = to).data
 
     suspend fun addExpense(amount: Long, category: String, note: String?, spentAt: String? = null): Expense? =
         api.createExpense(

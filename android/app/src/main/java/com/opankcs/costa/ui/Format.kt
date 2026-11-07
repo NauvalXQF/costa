@@ -17,19 +17,41 @@ private val rupiahFormat = DecimalFormat("#,##0", DecimalFormatSymbols(Locale("i
 fun formatRupiah(value: Long?): String = "Rp" + rupiahFormat.format(value ?: 0L)
 
 fun parseAmount(input: String): Long? {
-    val text = input.lowercase().trim().replace("rp", "").replace(" ", "")
+    var text = input.lowercase().trim().replace("rp", "").replace(" ", "")
     if (text.isEmpty()) return null
 
-    val multiplier = if (text.endsWith("k") || text.endsWith("rb") || text.endsWith("ribu")) 1000L else 1L
+    val multiplier = when {
+        text.endsWith("ribu") -> 1000L
+        text.endsWith("rb") -> 1000L
+        text.endsWith("k") -> 1000L
+        else -> 1L
+    }
 
-    val numeric = text
-        .removeSuffix("ribu")
-        .removeSuffix("rb")
-        .removeSuffix("k")
-        .replace(".", "")
-        .replace(",", "")
+    text = text.removeSuffix("ribu").removeSuffix("rb").removeSuffix("k")
+    if (text.isEmpty()) return null
 
-    return numeric.toLongOrNull()?.times(multiplier)
+    val separatorCount = text.count { it == '.' || it == ',' }
+
+    if (separatorCount == 0) {
+        return text.toLongOrNull()?.times(multiplier)
+    }
+
+    if (multiplier > 1L) {
+        // Shorthand like "12.5k" / "2,5k": treat the last separator as decimal
+        val normalized = text.replace(',', '.')
+        val parts = normalized.split('.')
+
+        if (parts.size == 2 && parts[0].isNotEmpty() && parts[1].length in 1..2) {
+            normalized.toDoubleOrNull()?.let { value ->
+                return (value * multiplier).toLong()
+            }
+        }
+
+        val digits = normalized.replace(".", "")
+        return digits.toLongOrNull()?.times(multiplier)
+    }
+
+    return text.replace(".", "").replace(",", "").toLongOrNull()
 }
 
 fun parseSpentAt(value: String?): LocalDateTime? = try {
@@ -69,6 +91,19 @@ fun spentAtIsoFromMillis(millis: Long?): String? {
     if (date == LocalDate.now()) return null
     return date
         .atTime(LocalTime.NOON)
+        .atZone(ZoneId.systemDefault())
+        .toOffsetDateTime()
+        .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+}
+
+fun spentAtIsoForEdit(millis: Long?): String? {
+    if (millis == null) return null
+
+    val date = utcMillisToLocalDate(millis)
+    val time = if (date == LocalDate.now()) LocalTime.now() else LocalTime.NOON
+
+    return date
+        .atTime(time)
         .atZone(ZoneId.systemDefault())
         .toOffsetDateTime()
         .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)

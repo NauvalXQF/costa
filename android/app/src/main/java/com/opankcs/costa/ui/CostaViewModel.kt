@@ -40,9 +40,15 @@ data class CostaUiState(
     val settings: Settings = Settings(),
     val availableUpdate: AppVersionResponse? = null,
     val updateDownloading: Boolean = false,
+    val historyHasMore: Boolean = false,
+    val loadingMoreHistory: Boolean = false,
 )
 
 class CostaViewModel(application: Application) : AndroidViewModel(application) {
+    private companion object {
+        const val PAGE_SIZE = 200
+    }
+
     private val prefs = Prefs(application)
     private val repository = CostaRepository(prefs)
 
@@ -180,7 +186,8 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
 
                 val categoryList = repository.categoryList()
                 val categories = categoryList.data
-                val expenses = repository.expenses()
+                val expenses = repository.expenses(limit = PAGE_SIZE)
+                val hasMore = expenses.size >= PAGE_SIZE
                 val today = repository.summary("today")
                 val week = repository.summary("week")
                 val month = repository.summary("month")
@@ -197,6 +204,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                         categories = categories,
                         hiddenCategories = categoryList.hidden,
                         expenses = expenses,
+                        historyHasMore = hasMore,
                         today = today,
                         week = week,
                         month = month,
@@ -292,7 +300,7 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
                         amount = amount,
                         category = categorySlug,
                         note = note.ifBlank { null },
-                        spentAt = spentAtIsoFromMillis(dateMillis),
+                        spentAt = spentAtIsoForEdit(dateMillis),
                     ),
                 )
                 _state.update { it.copy(notice = "Pengeluaran diperbarui", error = null) }
@@ -565,6 +573,43 @@ class CostaViewModel(application: Application) : AndroidViewModel(application) {
             } catch (e: Exception) {
                 _state.update {
                     it.copy(updateDownloading = false, error = "Gagal mengunduh update")
+                }
+            }
+        }
+    }
+
+    fun loadMoreHistory() {
+        val current = _state.value.expenses
+
+        if (_state.value.loadingMoreHistory || !_state.value.historyHasMore || current.isEmpty()) return
+
+        val oldestDate = current
+            .mapNotNull { parseSpentAt(it.spentAt)?.toLocalDate() }
+            .minOrNull() ?: return
+
+        val to = oldestDate.minusDays(1).toString()
+
+        viewModelScope.launch {
+            _state.update { it.copy(loadingMoreHistory = true, error = null) }
+
+            try {
+                val page = repository.expenses(limit = PAGE_SIZE, to = to)
+                val existingIds = _state.value.expenses.map { it.id }.toSet()
+                val merged = _state.value.expenses + page.filterNot { it.id in existingIds }
+
+                _state.update {
+                    it.copy(
+                        expenses = merged,
+                        historyHasMore = page.size >= PAGE_SIZE,
+                        loadingMoreHistory = false,
+                    )
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        loadingMoreHistory = false,
+                        error = "Gagal memuat riwayat lama",
+                    )
                 }
             }
         }
