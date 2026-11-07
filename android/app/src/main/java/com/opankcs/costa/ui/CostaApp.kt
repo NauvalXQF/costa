@@ -207,19 +207,19 @@ fun CostaApp(viewModel: CostaViewModel, startAtHome: Boolean = false) {
                     NavigationBarItem(
                         selected = tab == 0,
                         onClick = { haptics.tick(); tab = 0 },
-                        icon = { Text("🏠") },
+                        icon = { AnimatedNavIcon("🏠", selected = tab == 0) },
                         label = { Text(stringResource(R.string.nav_home)) },
                     )
                     NavigationBarItem(
                         selected = tab == 1,
                         onClick = { haptics.tick(); tab = 1 },
-                        icon = { Text("📊") },
+                        icon = { AnimatedNavIcon("📊", selected = tab == 1) },
                         label = { Text(stringResource(R.string.nav_history)) },
                     )
                     NavigationBarItem(
                         selected = tab == 2,
                         onClick = { haptics.tick(); tab = 2 },
-                        icon = { Text("⚙️") },
+                        icon = { AnimatedNavIcon("⚙️", selected = tab == 2) },
                         label = { Text(stringResource(R.string.nav_settings)) },
                     )
                 }
